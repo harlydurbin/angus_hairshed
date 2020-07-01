@@ -1,0 +1,145 @@
+---
+title: "Genotype formatting and QC"
+author: "Harly Durbin"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    df_print: paged
+    code_folding: hide 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(tibble)
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(tidylog)
+```
+
+# Notes & questions
+
+From Duc:
+
+Files include:
+1.	genotypes_imp_short.txt : file format is RegNum   1    Genotypes… You just need to ignore 2nd column “1”. Genotypes are in 0, 2, 3, 4 where 0 = AA, 2 = BB, 3 & 4 = AB. So you need to convert 3 and 4 to 1.
+2.	stat_snp_imp.txt  : this file includes SNP map in same order of genotypes in the previous file, plus frequencies of 0, 1, 2 and MAF. Use it as you may wish to.
+3.	report.txt : this file reports the imputation process with a bit of info about FImpute v3.0 and authors. You can use that info to acknowledge the authors in your manuscript.
+
+# Setup
+
+```{r}
+angus_join <- read_rds(here::here("data/derived_data/angus_join.rds"))
+```
+
+
+# Genotype formatting for BLUPF90
+
+
+```{r}
+tribble(~"genotype", ~"fimpute", ~"blupf90",
+         "AA", 0, 0,
+         "AB", 4, 1, 
+         "BA", 3, 1,
+         "BB", 2, 2, 
+         "missing", 5, 5)
+```
+
+Need to:
+
+* Remove second column of 1s
+    + `awk '{print $1, $3}'`
+* Remove ~~~
+    + `tr -d '~'`
+* Convert 3 & 4 to 1
+    + `awk 'BEGIN{FS=OFS=" "} {gsub(/1/, "6", $2)} 1' `
+* Pad IDs with spaces to the same legth
+    + `awk '{printf "%-20%s\n", $1, $2}'`
+
+
+`awk '{print $1 " " $3}' genotypes_imp_short.txt | tr -d '~' | awk 'BEGIN{FS=OFS=" "} {gsub(/3/, "1", $2);gsub(/4/, "1", $2)} 1' | awk '{printf "%-20s %s\n", $1, $2}' &> 20191219.imputed_formatted.txt`
+
+---
+
+* Check length of genotype column (make sure everyone has the same number of SNPs)
+
+`awk '{print length($2)}' 20191219.imputed_formatted.txt &> length_check.txt`
+
+```{r}
+read_table2(here::here("data/raw_data/imputed_F250+/length_check.txt"), col_names = FALSE) %>% 
+  filter(X1 != 233246)
+```
+
+
+# Map file formatting for BLUPF90
+
+```{r}
+snp_map <-
+  read_table2(here::here("data/raw_data/imputed_F250+/stat_snp_imp.txt"), skip = 1) %>% 
+  janitor::clean_names()
+```
+
+```{r, eval = FALSE}
+# WRONNNGGG
+snp_map %>% 
+  select(SNPID = snpid, CHR = chr, POS = pos) %>% 
+  write_delim(here::here("data/f90/191219_varcomp/blupf90_snp_map.txt"), delim = " ", col_names = TRUE)
+```
+
+"OPTION chrinfo <file>: read SNP map information from the file.
+Field 1 – SNP number (sequential marker number)
+Field 2 – chromosome number
+Field 3 – physical location (position) in bp
+
+All the values should be integer. The SNP number corresponds to the index number of the SNP, in the
+sorted map by chromosome and the position. The first line in the file corresponds to the first SNP in the
+genotype file, and so on. You can optionally put the marker name in the 4th or later fields (can handle
+alphanumeric format)."
+
+```{r,eval=FALSE}
+snp_map %>% 
+  mutate(index = row_number()) %>% 
+  select(index, chr, pos, snpid) %>% 
+  write_delim(here::here("data/derived_data/chrinfo.imputed_hair.txt"), delim = " ", col_names = FALSE)
+```
+
+
+# Summary statistics
+
+* Minor allele frequency distribution pre-filtering
+
+```{r}
+ snp_map %>% 
+  ggplot(aes(x = maf)) +
+  geom_density() +
+  geom_vline(xintercept = 0.001)
+```
+
+```{r}
+snp_map %>% 
+  filter(maf != 0) %>% 
+  filter(0.0001 >= maf)
+```
+
+
+* Number of samples per farm
+
+```{r}
+read_table2(here::here("data/raw_data/imputed_f250+/sample_order.txt"), col_names = "full_reg") %>% 
+  left_join(angus_join %>% 
+              select(full_reg, farm_id, sex, source) %>% 
+              distinct()) %>% 
+  group_by(farm_id, source) %>% 
+  tally(sort = TRUE)
+```
+
+
+# Commentary
+
+  Genotypes for xxx animal were imputed to xxx markers using FIMPUTE. The GGP-F250 chip is enriched for potentially functional, low MAF variants. Therefore, no MAF filter was applied post-imputation. After removing monomorphic SNPs, the final marker set contained r read_table2(here::here("data/derived_data/general_varcomp/freqdata.count.after.clean"), col_names = FALSE) %>% filter(is.na(X3)) %>% select(X1) %>% n_distinct() %>% scales::comma() variants.  
+
+* How many for each original chip?
+* Need more from Duc on QC done in FIMPUTE
+
+

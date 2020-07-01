@@ -1,0 +1,295 @@
+---
+title: "F250 ID matching"
+author: "Harly Durbin"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(rlang)
+library(glue)
+library(ggplot2)
+library(lubridate)
+library(forcats)
+library(magrittr)
+library(purrr)
+library(tidylog)
+
+source(here::here("source_functions/iterative_id_search.R"))
+source(here::here("source_functions/coalesce_join.R"))
+
+```
+
+
+# Setup
+
+> AGI combined hair shedding dataset
+
+```{r}
+
+angus_join <- 
+  read_rds(here::here("data/derived_data/angus_join.rds")) %>% 
+  mutate(
+    Lab_ID =
+      case_when(
+        full_reg == "AAA16611219" ~ NA_integer_,
+        TRUE ~ as.integer(Lab_ID)
+      )
+  )
+
+```
+
+> MU sample sheet
+
+```{r, echo = TRUE, message=FALSE, warning=FALSE}
+
+sample_sheet <- 
+  read_delim(here::here("data/raw_data/190802_sample_sheet.csv"), delim = c(","), col_names = TRUE, guess_max = 10000) %>% 
+  # This gets annoying so I'm renaming it
+  rename(Lab_ID = lab_id,
+         Reg = reg)
+
+#write_rds(sample_sheet, here::here("data/raw/sample_sheet.rds"))
+```
+
+> MU animal table
+
+```{r}
+animal_table <- read_rds(here::here("data/raw_data/animal_table.rds"))
+```
+
+> Full MU hair shedding dataset 
+
+```{r}
+nested_join <- read_rds(here::here("data/raw_data/nested_join.rds"))
+
+```
+
+```{r}
+geno_check <-
+  angus_join %>%
+  select(source, farm_id, Lab_ID, full_reg, registration_number, barcode) %>%
+  distinct() %>%
+  # Fill in barcodes by registration number
+  group_by(full_reg) %>% 
+  arrange(barcode) %>% 
+  fill(barcode, .direction = "downup") %>% 
+  ungroup() %>% 
+  # Angus genotype check from Duc
+  left_join(
+    read_csv(
+      here::here("data/raw_data/genotype_check.csv"),
+      col_names = c("full_reg", "assay_agi"),
+      na = "#N/A",
+      col_types = cols(.default = "c")
+    ) %>%
+      mutate(
+        full_reg =
+          case_when(
+            str_detect(full_reg, "^1") ~ glue("AAA{full_reg}"),
+            str_detect(full_reg, "^6") ~ glue("BIR{full_reg}"),
+            TRUE ~ full_reg
+          )
+      )
+  ) %>%
+  left_join(
+    angus_join %>%
+      filter(source == "mizzou") %>%
+      select(source, farm_id, Lab_ID, full_reg, registration_number, barcode) %>%
+      distinct() %>%
+      # Add info from MU sample sheet
+      left_join(sample_sheet %>%
+                  rename(assay_mu = assay))
+  ) %>%
+  select(-contains("international_id")) %>%
+  mutate(
+    at_agi =
+      case_when(!is.na(assay_agi) ~ "YES",
+                TRUE ~ "NO"),
+    at_mu =
+      case_when(!is.na(assay_mu) ~ "YES",
+                TRUE ~ "NO"),
+    at_any =
+      case_when(!is.na(assay_agi) | !is.na(assay_mu) ~ "YES",
+                TRUE ~ "NO")
+  ) %>%
+  distinct()
+
+```
+
+
+# List of animals that should  have gentoypes for Duc
+
+
+```{r}
+f250_list <-
+geno_check %>% 
+  filter(assay_mu == "GGPF250") %>% 
+  # Exclude samples not genotyped through the hair shedding project
+  filter(date_added > lubridate::ymd("2016-08-01")) %>% 
+  select(-do_not_analyze, -contains("assay"), -source, -farm_id, -registration_number, -Reg, -at_agi, -at_mu, -at_any) %>% 
+  filter(!Lab_ID %in% c(142869)) 
+```
+
+> Export list of animals genotyped on F250 through MU 
+
+```{r, eval = FALSE}
+
+f250_list %>% 
+  rename(registration_number = full_reg,
+         lab_id = Lab_ID) %>%
+  arrange(registration_number) %>% 
+  write_csv(here::here("data/derived_data/20191114.F250.csv"))
+```
+
+> Export list of all animals in AGI combined dataset
+
+```{r}
+angus_join %>% 
+  distinct(full_reg) %>% 
+  write_csv(here::here("data/derived_data/20191114.all_individuals.csv"), col_names = FALSE)
+```
+
+# F250 sample IDs from Duc
+
+* Duc: "Attached is a list 2698 unique sample IDs from my F250 genotypes. Some of your “lab_id” match my sample IDs. Some of your “sample_id” match my sample IDs too; and there are also many cases where both of your “lab_id” and “sample_id” match different samples, which create confusion. Therefore I think I better let you decide which of my sample IDs to be used."
+
+```{r}
+
+f250_id_search <-
+read_table2(here::here("data/raw_data/191108_sample_ids.txt")) %>% 
+  mutate(Lab_ID = NA_integer_) %>% 
+  # Barcode in geno_check
+  id_search(
+    source_col = sampleID,
+    search_col = barcode,
+    search_df = geno_check,
+    key_col = Lab_ID
+    ) %>% 
+  # Bob's sample_id in geno_check
+  id_search(
+    source_col = sampleID,
+    search_col = sample_id,
+    search_df = 
+      geno_check %>% 
+      mutate(sample_id = as.character(sample_id)),
+    key_col = Lab_ID
+    ) %>% 
+  # Lab_ID in geno_check
+  id_search(
+    source_col = sampleID,
+    search_col = labid2,
+    search_df = 
+      geno_check %>% 
+      mutate(labid2 = as.character(Lab_ID)),
+    key_col = Lab_ID
+    ) %>%
+  # AAA registration number from geno_check
+  id_search(
+    source_col = sampleID,
+    search_col = full_reg,
+    search_df = geno_check,
+    key_col = Lab_ID
+    ) %>%  
+  # Lab_ID in animal_table
+  id_search(
+    source_col = sampleID,
+    search_col = labid2,
+    search_df = 
+      animal_table %>% 
+      mutate(labid2 = as.character(Lab_ID)),
+    key_col = Lab_ID
+    ) %>%
+  # Ref_ID2 (usually barcode) in animal_table
+  id_search(
+    source_col = sampleID,
+    search_col = Ref_ID2,
+    search_df = animal_table,
+    key_col = Lab_ID
+    ) %>% 
+  left_join(
+    geno_check %>% 
+      filter(!is.na(Lab_ID)) %>% 
+      select(full_reg, Lab_ID)
+    ) %>% 
+  distinct() %>% 
+  left_join(
+    animal_table %>% 
+      mutate(anreg = as.character(glue::glue("AAA{breed_assoc_reg}"))) %>% 
+      select(Lab_ID, anreg)
+  ) %>% 
+  mutate(
+    full_reg =
+      case_when(
+        is.na(full_reg) & !is.na(anreg) ~ anreg,
+        TRUE ~ full_reg
+      )
+  ) %>% 
+  select(-anreg)
+
+
+```
+
+> How many distinct registration numbers?
+
+```{r}
+
+f250_id_search %>% 
+  filter(!is.na(Lab_ID)) %>% 
+  distinct(full_reg)
+
+```
+
+> How many weren't in the list I sent Duc? What do they belong to?
+
+```{r}
+f250_id_search %>% 
+  filter(!Lab_ID %in% f250_list$Lab_ID & !is.na(Lab_ID)) %>% 
+  distinct(Lab_ID) %>% 
+  left_join(animal_table) 
+```
+
+> How many have a duplicate?
+
+```{r}
+f250_id_search %>% 
+  filter(!is.na(Lab_ID)) %>% 
+  add_count(Lab_ID) %>% 
+  filter(n > 1) %>% 
+  arrange(Lab_ID) %>% 
+  distinct(full_reg, n)
+```
+
+> How many not in MU data?
+
+```{r}
+f250_id_search %>% 
+  filter(is.na(Lab_ID))
+```
+
+
+```{r, eval = FALSE}
+
+f250_id_search %>% 
+  arrange(order) %>% 
+  rename(registration_number = full_reg,
+         lab_id = Lab_ID) %>%
+  write_csv(here::here("data/derived_data/20191120.F250_sample_ids.csv"), na = "")
+
+```
+
+```{r}
+genotyped <-
+  read_table2(here::here("data/derived_data/genotyped_id.txt"), col_names = FALSE) %>%
+  pull(X1)
+```
+
+```{r}
+f250_id_search %>% 
+  filter(full_reg %in% genotyped) 
+```
+

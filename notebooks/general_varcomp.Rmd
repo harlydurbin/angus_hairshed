@@ -1,0 +1,160 @@
+---
+title: "Breeding values & variance components"
+author: "Harly Durbin"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    df_print: paged
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(rlang)
+library(glue)
+library(ggplot2)
+library(lubridate)
+library(forcats)
+library(magrittr)
+library(readxl)
+library(purrr)
+library(tidylog)
+
+source(here::here("source_functions/three_gen.R"))
+source(here::here("source_functions/melt_aireml.R"))
+source(here::here("source_functions/cg_tallies.R"))
+source(here::here("source_functions/calculate_heritability.R"))
+```
+
+# Notes & questions
+
+* ~~Write more about possibly why such low PE variance~~
+* SNP file and map file formatting in `geno_format.Rmd`. 
+* CG = farm, year, calving season (spring or fall), age group (yearling, 2-year-old, 3-year-old, or other), fescue, and score group
+    + Remove CGs with fewer than 5 animals
+
+## Threshold model?
+
+* https://stats.stackexchange.com/questions/25894/changing-the-scale-of-a-variable-to-0-100
+
+$$\frac{max_{new}-min_{new}}{max_{old}-min_{old}}*(v-max_{old})+max_{new} $$
+
+```{r}
+
+angus_join %>% 
+  mutate(threshold = ((1-0)/(5-1))*(hair_score-5)+1) %>% 
+  select(threshold, hair_score, everything())
+
+```
+
+
+# Setup
+
+```{r, warning=FALSE, message=FALSE}
+source(here::here("source_functions/hair_ped.R"))
+
+```
+
+```{r}
+start <- 
+  read_rds(here::here("data/derived_data/start.rds"))
+```
+
+
+```{r}
+angus_join <-
+  read_rds(here::here("data/derived_data/angus_join.rds"))
+```
+
+
+```{r}
+ped <-
+  start %>%
+  left_join(hair_ped %>%
+              select(full_reg, sire_reg, dam_reg))  %>%
+  three_gen(full_ped = hair_ped) %>%
+  mutate_all( ~ replace_na(., "0"))
+
+```
+
+# Threshold model?
+
+https://stats.stackexchange.com/questions/25894/changing-the-scale-of-a-variable-to-0-100
+
+$$\frac{max_{new}-min_{new}}{max_{old}-min_{old}}*(v-max_{old})+max_{new} $$
+
+```{r}
+
+angus_join %>% 
+  mutate(threshold = ((1-0)/(5-1))*(hair_score-5)+1) %>% 
+  select(threshold, hair_score, everything())
+
+```
+
+
+
+# Variance components, heritability, and repeatability
+
+```{r}
+var_cov <-
+  melt_aireml(
+    path = here::here("data/derived_data/general_varcomp/normal/airemlf90.general_varcomp.normal.log"),
+    effect2 = c("hair_dir"),
+    effect3 = c("hair_pe"),
+    resids = c("hair_res")
+  ) 
+```
+
+```{r}
+var_cov %>% 
+  filter(val1 == val2) %>% 
+  separate(val1, into = c("key", "effect"), sep = "_") %>% 
+  select(effect, var_cov) %>% 
+  tidyr::pivot_wider(names_from = effect, values_from = var_cov) %>% 
+  rename(`Genetic variance` = dir,
+         `Permanent environment variance` = pe,
+         `Residual variance` = res)
+```
+
+
+
+```{r}
+herit <-
+  var_cov %>%
+  univ_heritability(
+    abbrv = "hair",
+    desc = "Hair shedding",
+    pe = TRUE
+    )
+
+```
+
+```{r}
+herit
+```
+
+
+# Commentary
+
+
+```{r, eval=FALSE}
+read_table2(here::here("data/derived_data/general_varcomp/freqdata.count.after.clean"), col_names = FALSE) %>% 
+  filter(X3 == "MAF") %>% 
+  select(X1) %>% 
+  n_distinct() %>% 
+  scales::comma()
+
+
+```
+
+  Contemporary groups were defined as a combination of farm, year, calving season (spring or fall), fescue status, age group (yearling, 2-year-old, 3-year-old, or other), and score group. Score group was determined using a sliding window to maximize the number of animals per contemporary group in a seven-day window. In the future, it will be recommended that producers hair shedding score all cattle within a week of one another in order to enable accurate contemporary grouping. Contemporary groups with fewer than 5 animals were dropped. This resulted in `r start %>% n_distinct() %>% scales::comma()` total scores from `r start %>% select(registration_number) %>%  n_distinct(.) %>% scales::comma()` animals in `r start %>% select(cg_num) %>%  n_distinct(.)` contemporary groups.  
+
+  The H-matrix was constructed using the 3-generation additive pedigree and imputed genotypes, resulting in `r ped %>% select(full_reg) %>% n_distinct(.) %>% scales::comma()` total animals (`r ped %>% select(sire_reg) %>% n_distinct(.) %>% scales::comma()` distinct sires, `r ped %>% select(dam_reg) %>% n_distinct(.) %>% scales::comma()` distinct dams).  
+
+  Estimated narrow sense heritability ($\frac{\sigma^2_{a}}{\sigma^2_{a}+\sigma^2_{pe}+\sigma^2_{e}}$) was `r herit %>% pull(3)` and estimated repeatability ($\frac{\sigma^2_{a}+\sigma^2_{pe}}{\sigma^2_{a}+\sigma^2_{pe}+\sigma^2_{e}}$) was `r herit %>% pull(Repeatability)`.

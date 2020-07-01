@@ -1,0 +1,23 @@
+ In round         12 convergence =  0.115819833695E-10
+ delta convergence =  0.550732419848E-06
+-2logL =        33727.753     : AIC =        33733.753    
+Genetic variance(s) for effect  2       
+  0.33693    
+Genetic variance(s) for effect  3       
+  0.73798E-01
+Residual variance(s)
+  0.51743    
+inverse of AI matrix (Sampling Variance)
+  0.59418E-03 -0.29224E-03 -0.11963E-04
+ -0.29224E-03  0.30052E-03 -0.67902E-04
+ -0.11963E-04 -0.67902E-04  0.12506E-03
+Correlations from inverse of AI matrix
+   1.0000     -0.69160     -0.43885E-01
+ -0.69160       1.0000     -0.35026    
+ -0.43885E-01 -0.35026       1.0000    
+SE for G
+  0.24376E-01
+SE for G
+  0.17335E-01
+SE for R
+  0.11183E-01

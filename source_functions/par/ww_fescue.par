@@ -1,0 +1,50 @@
+# cols: calf_reg, hair_cg, ww_cg, hair_score, ww
+# HS and WW as trait of the dam, but effect of calf on dam's HS score fixed to zero
+# effects fit: ww_calf, ww_mat, hs_mat, hs_mpe, hs_pe
+DATAFILE
+data.txt
+TRAITS
+4 5
+RESIDUAL_VARIANCE
+0.5 0.1
+0.1 1500
+# CG for hair is column 2
+# CG for wean is column 3
+EFFECT
+2 3 cross alpha
+# animal effect for both
+EFFECT
+1 1 cross alpha
+RANDOM
+animal
+OPTIONAL
+mat mpe
+FILE
+ped.txt
+FILE_POS
+1 2 3 0 0
+SNP_FILE
+genotypes.txt
+PED_DEPTH
+3
+INBREEDING
+pedigree
+# hair_dir, ww_dir, hair_mat, ww_mat
+(CO)VARIANCES
+0 0 0 0
+0 800 0.01 -200
+0 0.01 0.1 0.01
+0 -200 0.01 300
+(CO)VARIANCES_MPE
+0.1 0.01
+0.01 200
+OPTION minfreq 0.0001
+OPTION chrinfo ../../chrinfo.imputed_hair.txt
+OPTION residual
+OPTION sol se
+OPTION conv_crit 1e-12
+OPTION use_yams
+OPTION sex_chr 30
+OPTION excludeCHR
+OPTION fact_one file
+OPTION EM-REML 10

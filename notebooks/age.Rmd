@@ -1,0 +1,601 @@
+---
+title: "Age solutions"
+author: "Harly Durbin"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    df_print: paged
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(rlang)
+library(glue)
+library(ggplot2)
+library(lubridate)
+library(forcats)
+library(magrittr)
+library(readxl)
+library(purrr)
+library(patchwork)
+library(tidylog)
+
+source(here::here("source_functions/age_effect_theme.R"))
+source(here::here("source_functions/parse_loglik.R"))
+source(here::here("source_functions/parse_renf90table.R"))
+source(here::here("source_functions/lrt_calc.R"))
+```
+
+# Notes &  questions
+
+* BIF age of dam BW: 2, 3, 4, 5-9, >= 10
+* When does a mean need to be included in the model??
+* According to AAA guidelines: "Acceptable calf ages for yearling measures are 320-440 days of age."
+
+# Setup
+
+```{r}
+angus_join <- read_rds(here::here("data/derived_data/angus_join.rds"))
+```
+
+```{r}
+age_start <-
+  angus_join %>%
+  # No bulls for now
+  filter(sex == "F") %>%
+  # At least 5 per age
+  ungroup() %>%
+  mutate(
+    four_groups =
+      case_when(
+        age == 1 ~ "yearling",
+        age == 2 ~ "fch",
+        age == 3 ~ "three",
+        TRUE ~ "mature"
+      ),
+    # Edited 3/2/20 in order to reflect updated age of dam classifications
+    bif_age =
+      case_when(
+        age == 1 ~ "yearling",
+        age == 2 ~ "fch",
+        age == 3 ~ "three",
+        age == 4 ~ "four",
+        between(age, 5, 9) ~ "5_9",
+        age == 10 ~ "10",
+        age == 11 ~ "11",
+        age == 12 ~ "12",
+        TRUE ~ "13+"
+      ),
+    four_groups = fct_relevel(as_factor(four_groups), "yearling", "fch", "three", "mature"),
+    bif_age = fct_relevel(as_factor(bif_age), "yearling", "fch", "three", "four",  "5_9", "10", "11", "12", "13+"),
+    ) %>%
+  # Score windows for CG
+  left_join(
+    read_excel(here::here(
+      "data/derived_data/score_windows2.xlsx"
+    )) %>%
+      mutate(date_score_recorded = lubridate::ymd(date_score_recorded)) %>%
+      select(farm_id, year, date_score_recorded, score_group)
+  ) %>%
+  mutate(
+    score_group = tidyr::replace_na(score_group, 1),
+    # Exclude age from CG
+    # 2/5/20 Add fescue status back in
+    cg = glue(
+      "{farm_id}{year}{calving_season}{score_group}{toxic_fescue}"
+    ),
+    hair_cg = as.integer(factor(cg)),
+  ) %>%
+  # Remove if fewer than 5 animals per CG
+  group_by(hair_cg) %>%
+  filter(n() >= 5) %>%
+  # Remove CGs with no variation
+  filter(var(hair_score) != 0) %>%
+  ungroup()
+
+```
+
+# Sanity check
+
+1 = CG, 2 = bv, 3 = PE, 4 = age solutions 
+ 
+```{r}
+allsol <-
+ # c("null", "years_factor", "four_groups", "bif_age") %>%
+  c("years_factor") %>% 
+  set_names() %>% 
+  purrr::map_df(~ read_table2(
+    here::here(glue::glue("data/derived_data/age/{.x}/solutions")),
+    skip = 1,
+    col_names = c("trait", "effect", "age_renamed", "solution", "se")
+  ) ,
+  .id = "model")
+
+```
+
+# Data exploration
+
+```{r, fig.width=8, fig.height=4}
+
+age_start %>% 
+  ggplot(aes(x = age)) +
+  geom_histogram() +
+  scale_x_continuous() +
+  labs(x = "Age in years", y = "Count of scores", title = "Distribution of hair shedding scores by cow age") +
+    theme_classic() +
+    theme(
+      plot.title = element_text(
+        size = 22,
+        face = "italic",
+        margin = margin(
+          t = 0,
+          r = 0,
+          b = 13,
+          l = 0
+        )
+      ),
+      axis.title = element_text(size = 16),
+      axis.title.y = element_text(margin = margin(
+        t = 0,
+        r = 13,
+        b = 0,
+        l = 0
+      )),
+      axis.title.x = element_text(margin = margin(
+        t = 13,
+        r = 0,
+        b = 0,
+        l = 0
+      )),
+      axis.text = element_text(size = 14),
+      legend.position = "none"
+    )
+
+
+```
+
+
+# Inform model choice by looking at effect of age in years as factor
+
+```{r, fig.width = 8, fig.height = 6}
+# Bar plot
+
+read_table2(
+  here::here("data/derived_data/age/years_factor/solutions"),
+  skip = 1,
+  col_names = c("trait", "effect", "age_renamed", "solution", "se")
+) %>%
+  filter(effect == 2) %>%
+  select(-effect, -trait) %>% 
+  left_join(
+    parse_renf90table(
+      path = here::here("data/derived_data/age/years_factor/renf90.tables"),
+      effect = 2
+    ) %>% 
+      rename(age = id_original,
+             age_renamed = id_renamed)
+  ) %>%
+  filter(n >= 5) %>% 
+  arrange(age) %>%
+  mutate(age = as_factor(age)) %>%
+  ggplot(aes(
+    x = age,
+    y = solution,
+    fill = ifelse(age == 2, "Highlighted", "Normal")
+  )) %>% 
+  age_effect_theme(x_title = "Age", y_title = "Effect estimate")
+
+#cowplot::ggsave2("Y://agi_hairshed/figures/age.years_factor.single_step.png", width = 8, height = 6, dpi = 500)
+```
+
+
+```{r}
+
+read_table2(
+  here::here("data/derived_data/age/years_factor/solutions"),
+  skip = 1,
+  col_names = c("trait", "effect", "age_renamed", "solution", "se")
+) %>%
+  filter(effect == 2) %>%
+  select(-effect, -trait) %>% 
+  left_join(
+    parse_renf90table(
+      path = here::here("data/derived_data/age/years_factor/renf90.tables"),
+      effect = 2
+    ) %>% 
+      rename(age = id_original,
+             age_renamed = id_renamed)
+  ) %>% 
+  select(age, everything(), -age_renamed) %>% 
+  arrange(age)
+```
+
+
+# Fixed effect estimates from age class models
+
+```{r, fig.width = 8, fig.height = 4}
+
+  read_table2(
+  here::here("data/derived_data/age/four_groups/solutions"),
+  skip = 1,
+  col_names = c("trait", "effect", "age_renamed", "solution", "se")
+) %>%
+  filter(effect == 2) %>%
+  select(-effect, -trait) %>%
+  left_join(
+    parse_renf90table(
+      path = here::here("data/derived_data/age/four_groups/renf90.tables"),
+      effect = 2
+    ) %>%
+      rename(age = id_original,
+             age_renamed = id_renamed)
+  ) %>%
+  mutate(mod = "Four age classes") %>%
+  bind_rows(
+    read_table2(
+      here::here("data/derived_data/age/bif_age/solutions"),
+      skip = 1,
+      col_names = c("trait", "effect", "age_renamed", "solution", "se")
+    ) %>%
+      filter(effect == 2) %>%
+      select(-effect, -trait) %>%
+      left_join(
+        parse_renf90table(
+          path = here::here("data/derived_data/age/bif_age/renf90.tables"),
+          effect = 2
+        ) %>%
+          rename(age = id_original,
+                 age_renamed = id_renamed)
+      )  %>%
+      mutate(mod = "BIF age classes")
+  ) %>%
+  mutate(
+    age = case_when(
+      age == "fch" ~ "2",
+      age == "yearling" ~ "1",
+      age == "three" ~ "3",
+      age == "four" ~ "4",
+      age == "5_9" ~ "5-9",
+      age == "mature" &
+        mod == "Four age classes" ~ "Other",
+      TRUE ~ age
+    ),
+    age = fct_relevel(
+      as_factor(age),
+      "1",
+      "2",
+      "3",
+      "4",
+      "5-9",
+      "Other",
+      "10",
+      "11",
+      "12",
+      "13+"
+    )
+  ) %>%
+  ggplot(aes(
+    x = age,
+    y = solution,
+    fill = ifelse(solution > 0, "Highlighted", "Normal")
+  )) %>%
+  age_effect_theme(x_title = "Age class", y_title = "Effect estimate") +
+  #facet_wrap( ~ mod, scales = "free_x", nrow = 1) +
+  ggforce::facet_row(~ mod, scales = "free_x", space = "free") +
+  theme(axis.text.x = element_text(angle = 25,
+                                   margin = margin(
+                                     t = 7,
+                                     r = 3,
+                                     b = 3,
+                                     l = 0
+                                   )),
+        strip.text = element_text(size = 16))
+  
+
+#ggsave("Y://agi_hairshed/figures/age.four_groups.png", width = 8, height = 6, dpi = 500)
+```
+
+
+# Comparison of model fit
+
+```{r}
+age_mods <-
+  tibble(mod = c("null", "four_groups", "bif_age", "years_factor")) %>%
+  mutate(AIC =
+           purrr::map_dbl(
+             .x = mod,
+             ~ parse_loglik(
+             path = here::here(glue("data/derived_data/age/{.x}/airemlf90.{.x}.log")),
+             option = "AIC"
+           )),
+         loglik =
+           purrr::map_dbl(
+             .x = mod,
+             ~ parse_loglik(
+             path = here::here(glue("data/derived_data/age/{.x}/airemlf90.{.x}.log")),
+             option = "logL"
+           ))
+           )
+```
+
+
+# Commentary
+
+Anecdotally, we've observed differences between age groups in the onset of hair shedding. Particularly, first calf heifers tend to have higher hair shedding scores.  
+The motivation was to:  
+
+1. Quantify the effect of age on hair shedding score
+2. Determine the best strategy for age classification during contemporary grouping  
+
+Models in order of increasing complexity:  
+
+- Null (no age effect included)
+- 1, 2, 3, other (four_groups)
+- BIF age classes (bif_age)
+- Age in years as a factor (years_factor)
+
+The distribution of ages in the data were as follows:  
+
+```{r}
+age_start %>% 
+  group_by(age) %>% 
+  tally() %>% 
+  arrange(age)
+```
+
+  To preliminarily quantify the effect of age on hair shedding score, age in years was fit as a fixed effect in a repeated records BLUP model. Age groups with fewer than 5 animals were excluded. The results of this model suggest a non-linear effect of age with larger effect sizes in yearlings, two-year-olds, & three-year-olds relative to older cows. Therefore, two increasingly complex BLUP models were fit. In the first, age was classified as 1, 2, 3, or other. In the second model, age was classified according to the guidelines set by the Beef Improvement Federation for age of dam effects on birth weight and weaning weight (2, 3, 4, 5-9, and 10+). Both models were compared against a null model with no age effect.  
+  
+Models:
+
+  $$y = X_1b + X_2a + Z_1u + Z_2p + e$$
+
+* $y$ is hair shedding score
+* $b$ is contemporary group
+* $a$ is age group
+* $u$ is additive genetic effect
+* $p$ is permanent environment effect
+* $e$ is random residual  
+
+---
+
+Effect size estimates were similar for both models. Both models also had lower AIC values than the null model with no age effect.  
+
+```{r}
+age_mods %>% 
+  select(-loglik) %>% 
+  arrange(AIC)
+```
+
+Likelihood ratio test $-10log(p)$ values suggest a better fit of the four class model over the null ($-10log(p)$ = `r lrt_calc(ll_null = age_mods %>% filter(mod == "null") %>% pull(loglik), ll_test = age_mods %>% filter(mod == "four_groups") %>% pull(loglik))`) and no improvement in model fit using BIF age classes over four age classes ($-10log(p)$ = `r lrt_calc(ll_null = age_mods %>% filter(mod == "four_groups") %>% pull(loglik), ll_test = age_mods %>% filter(mod == "bif_age") %>% pull(loglik))`)  
+
+```{r, echo=TRUE}
+lrt_calc(
+  ll_null = 
+    age_mods %>% 
+    filter(mod == "null") %>% 
+    pull(loglik),
+  ll_test = 
+    age_mods %>% 
+    filter(mod == "four_groups") %>% 
+    pull(loglik)    
+)
+```
+
+
+```{r, echo=TRUE}
+lrt_calc(
+  ll_null = 
+    age_mods %>% 
+    filter(mod == "four_groups") %>% 
+    pull(loglik),
+  ll_test = 
+    age_mods %>% 
+    filter(mod == "bif_age") %>% 
+    pull(loglik)    
+)
+```
+
+----
+
+## Three-panel publication plot
+
+
+```{r}
+p1 <-
+  read_table2(
+    here::here("data/derived_data/age/years_factor/solutions"),
+    skip = 1,
+    col_names = c("trait", "effect", "age_renamed", "solution", "se")
+  ) %>%
+  filter(effect == 2) %>%
+  select(-effect,-trait) %>%
+  left_join(
+    parse_renf90table(
+      path = here::here("data/derived_data/age/years_factor/renf90.tables"),
+      effect = 2
+    ) %>%
+      rename(age = id_original,
+             age_renamed = id_renamed)
+  ) %>%
+  filter(n >= 5) %>%
+  arrange(age) %>%
+  mutate(age = as_factor(age)) %>%
+  ggplot(aes(
+    x = age,
+    y = solution,
+    fill = ifelse(solution > 0, "Highlighted", "Normal")
+  )) +
+  geom_bar(stat = "identity",
+           position = "identity") +
+  scale_fill_manual(name = "age",
+                    values = c("#FF842A", "lightgrey")) +
+  geom_errorbar(aes(ymin = solution - se,
+                    ymax = solution + se),
+                size = 0.25) +
+  theme_classic() +
+  theme(
+    plot.title = element_blank(),
+    axis.title = element_text(size = 8),
+    axis.title.y = element_text(margin = margin(
+      t = 0,
+      r = 3,
+      b = 0,
+      l = 0
+    )),
+    axis.title.x = element_blank(),
+    axis.text = element_text(size = 6),
+    legend.position = "none",
+    plot.margin = margin(
+      t = 0.175,
+      r = 0,
+      b = 0,
+      l = 0,
+      unit = "mm"
+    )
+  ) +
+  labs(x = NULL,
+       y = "Effect estimate",
+       title = NULL)
+
+```
+
+```{r, fig.width = 8, fig.height = 4}
+
+# Bar plot
+p2 <-
+  read_table2(
+    here::here("data/derived_data/age/four_groups/solutions"),
+    skip = 1,
+    col_names = c("trait", "effect", "age_renamed", "solution", "se")
+  ) %>%
+  filter(effect == 2) %>%
+  select(-effect,-trait) %>%
+  left_join(
+    parse_renf90table(
+      path = here::here("data/derived_data/age/four_groups/renf90.tables"),
+      effect = 2
+    ) %>%
+      rename(age = id_original,
+             age_renamed = id_renamed)
+  ) %>%
+  mutate(mod = "Four age classes") %>%
+  bind_rows(
+    read_table2(
+      here::here("data/derived_data/age/bif_age/solutions"),
+      skip = 1,
+      col_names = c("trait", "effect", "age_renamed", "solution", "se")
+    ) %>%
+      filter(effect == 2) %>%
+      select(-effect,-trait) %>%
+      left_join(
+        parse_renf90table(
+          path = here::here("data/derived_data/age/bif_age/renf90.tables"),
+          effect = 2
+        ) %>%
+          rename(age = id_original,
+                 age_renamed = id_renamed)
+      )  %>%
+      mutate(mod = "BIF age classes")
+  ) %>%
+  mutate(
+    age = case_when(
+      age == "fch" ~ "2",
+      age == "yearling" ~ "1",
+      age == "three" ~ "3",
+      age == "four" ~ "4",
+      age == "5_9" ~ "5-9",
+      age == "mature" &
+        mod == "Four age classes" ~ "Other",
+      TRUE ~ age
+    ),
+    age = fct_relevel(
+      as_factor(age),
+      "1",
+      "2",
+      "3",
+      "4",
+      "5-9",
+      "Other",
+      "10",
+      "11",
+      "12",
+      "13+"
+    )
+  ) %>%
+  ggplot(aes(
+    x = age,
+    y = solution,
+    fill = ifelse(solution > 0, "Highlighted", "Normal")
+  )) +
+  geom_bar(stat = "identity",
+           position = "identity") +
+  scale_fill_manual(name = "age",
+                    values = c("#FF842A", "lightgrey")) +
+  geom_errorbar(aes(ymin = solution - se,
+                    ymax = solution + se),
+                size = 0.25) +
+  theme_classic() +
+  theme(
+    plot.title = element_blank(),
+    axis.title = element_text(size = 8),
+    axis.title.y = element_text(margin = margin(
+      t = 0,
+      r = 3,
+      b = 0,
+      l = 0
+    )),
+    axis.text = element_text(size = 6),
+    legend.position = "none",
+    plot.margin = margin(
+      t = 0.175,
+      r = 0,
+      b = 0,
+      l = 0,
+      unit = "mm"
+    )
+  ) +
+  labs(x = "Age class",
+       y = "Effect estimate",
+       title = NULL) +
+  ggforce::facet_row( ~ mod, scales = "free_x", space = "free") +
+  # Plot 2 specific stuff
+  theme(
+    axis.text.x = element_text(angle = 25,
+                               margin = margin(
+                                 t = 3,
+                                 r = 3,
+                                 b = 1,
+                                 l = 0
+                               )),
+    axis.title.x = element_text(margin = margin(
+      t = 0,
+      r = 0,
+      b = 0,
+      l = 0,
+      unit = "mm"
+    )),
+    strip.text = element_text(size = 7)
+  )
+  
+
+#ggsave("Y://agi_hairshed/figures/age.four_groups.png", width = 8, height = 6, dpi = 500)
+```
+
+
+```{r, fig.width=3.34646, fig.height=2.5098425}
+p1/p2 + plot_annotation(tag_levels = c("a")) & 
+  theme(plot.tag = element_text(size = 8),
+        plot.margin = margin(t = 0, b = 0, l = 1, r = 1, unit = "mm"))
+
+
+#ggsave("Y://agi_hairshed/figures/figure3.age_patchwork.pdf", width = 85, height = 63.75, units = "mm", dpi = 300)
+
+```
+

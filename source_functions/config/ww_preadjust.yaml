@@ -1,0 +1,5 @@
+blupf90_path: "/usr/local/bin/blupf90"
+
+renumf90_path: "~/bin/renumf90"
+
+master_geno: "data/derived_data/genotypes.imputed_hair.txt"

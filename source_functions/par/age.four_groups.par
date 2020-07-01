@@ -1,0 +1,48 @@
+DATAFILE
+data.txt
+TRAITS
+4
+FIELDS_PASSED TO OUTPUT
+1
+WEIGHT(S)
+
+RESIDUAL_VARIANCE
+0.01
+# Effect 1: CG effect
+EFFECT
+2 cross alpha
+EFFECT
+# Effect 2: age class
+3 cross alpha
+# Effect 3: animal effect
+EFFECT
+1 cross alpha
+RANDOM
+animal
+# Effect 4: PE
+OPTIONAL
+pe
+FILE
+ped.txt
+FILE_POS
+1 2 3 0 0
+SNP_FILE
+genotypes.txt
+PED_DEPTH
+3
+INBREEDING
+pedigree
+(CO)VARIANCES
+0.1
+(CO)VARIANCES_PE
+0.1
+OPTION minfreq 0.0001
+OPTION chrinfo ../../chrinfo.imputed_hair.txt
+OPTION residual
+OPTION sol se
+OPTION conv_crit 1e-12
+OPTION use_yams
+OPTION sex_chr 30
+OPTION excludeCHR
+OPTION fact_one file
+OPTION EM-REML 10

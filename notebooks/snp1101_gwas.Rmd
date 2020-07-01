@@ -1,0 +1,422 @@
+---
+title: "Hair shedding GWAS using SNP1101"
+author: "Harly Durbin"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    df_print: paged
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(purrr)
+library(patchwork)
+library(magrittr)
+library(stringr)
+library(tidylog)
+
+source(here::here("source_functions/calculate_acc.R"))
+source(here::here("source_functions/hair_manhattan.R"))
+source(here::here("source_functions/ggqq.R"))
+source(here::here("source_functions/find_genes.R"))
+```
+
+# Notes & questions
+
+* Genotypes in same format as blupf90
+    + Specify genotype file with `gfile`
+    + "`idcol`<n> specifies the column number of IDs"
+* Map file option `fimpute`
+* Ped needs gender as last column
+* Trait file 
+    + Can provide h2, va, ve
+    + Fixed effects read from any column using "var" command
+    + "Must have columns ID, group, observation, and corresponding reliability"
+        + Assuming observation is BV?
+    + Set all animals as `est`?
+    + `traitfile`
+* GWAS option
+    + ssr = SNP GWAS, shr = haplotype GWAS
+
+# Setup
+
+## Raw GWAS results
+
+```{r, warning = FALSE, message=FALSE}
+snp_sol <-
+  read_table2(
+    here::here(
+      "data/derived_data/snp1101_gwas/out/gwas_ssr_hair_shedding_bvs_p.txt"
+    )
+  )  %>%
+  janitor::clean_names() %>%
+  mutate(neglog10p = -log10(p_value),
+         abs_snp = abs(b_value)
+         #neglog10q = -log10(qvalue::qvalue(p_value)$qvalues)
+          ) %>%
+  left_join(read_table2(
+    here::here(
+      "data/derived_data/snp1101_gwas/out/gwas_ssr_hair_shedding_bvs.txt"
+    ),
+    skip = 12
+  ) %>%
+    select(chr = Chr, pos = Pos, fdr = FDR_GW, a))
+  
+```
+
+## Identify nearby genes using raw GWAS results
+
+* Variants passing FDR 0.05
+* UMD3.1 coordinates
+* 50 Kb window
+
+```{r, warning = FALSE, message=FALSE}
+hair_genes <-
+  snp_sol %>% 
+  filter(fdr != -1) %>% 
+  arrange(chr, p_value) %>% 
+  find_genes(n_genes = 1000, window = 50000, assembly = "umd") %>% 
+  left_join(snp_sol %>% 
+              select(chr, pos, neglog10p, freq, fdr))
+```
+
+## ClueGO results
+
+```{r, warning = FALSE, message=FALSE}
+cluego <-
+  readxl::read_excel(here::here("data/derived_data/ClueGOResultTable.xls")) %>% 
+  janitor::clean_names() %>% 
+  rename(corrected_term_p = term_p_value_corrected_with_benjamini_hochberg,
+         ) %>% 
+  select(-group_p_value_corrected_with_benjamini_hochberg, -group_p_value
+) %>% 
+  mutate(associated_genes_found = stringr::str_remove_all(associated_genes_found, "[[:punct:]]")) %>%
+  mutate(
+    genes_list = purrr::map(
+      .x = associated_genes_found,
+      ~   str_split(.x, pattern = " ") %>%
+        set_names(nm = "gene") %>%
+        as_tibble() %>%
+        left_join(hair_genes %>%
+                    select(chr, pos, gene, neglog10p))
+    )
+  ) %>% 
+  tidyr::unnest() %>% 
+  select(chr, gene, associated_genes_found, go_term, everything()) %>% 
+  distinct()
+```
+
+## String protein-protein interaction results
+
+```{r, warning=FALSE, message=FALSE}
+string_interact <-
+  read_table2(here::here("data/derived_data/string_interactions.tsv")) %>%
+  rename(node1 = `#node1`) %>%
+  select(
+    -contains("internal_id"),
+    -contains("external_id"),
+    -gene_fusion,
+    -neighborhood_on_chromosome,
+    -phylogenetic_cooccurrence,
+    -homology,
+    -automated_textmining
+  )
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+
+string_annotate <-
+  string_interact %>%
+  select(node = node1) %>%
+  bind_rows(string_interact %>%
+              select(node = node2)) %>%
+  distinct() %>%
+  left_join(read_csv(
+    here::here("data/derived_data/string_protein_annotations.csv")
+  ) %>%
+    select(node = `#node`, annotation = annotation)) %>%
+  left_join(
+    read_tsv(here::here(
+      "data/derived_data/enrichment.Pfam.tsv"
+    )) %>%
+      select(
+        enrichment_description = `term description`,
+        list = `matching proteins in your network (labels)`,
+        enrichment_fdr = `false discovery rate`
+      ) %>%
+      mutate(
+        genes_list = purrr::map(
+          .x = list,
+          ~   str_split(.x, pattern = ",") %>%
+            set_names(nm = "node") %>%
+            as_tibble()
+        )
+      ) %>%
+      tidyr::unnest()
+  ) 
+```
+
+
+# Raw GWAS results summary
+
+## How many variants passed FDR 0.05?
+
+```{r}
+snp_sol %>% 
+  filter(fdr != -1)
+```
+
+
+## Percentage of SNPs on each chromosome
+
+```{r}
+snp_sol %>% 
+  filter(fdr != -1) %>% 
+  group_by(chr) %>% 
+  tally() %>% 
+  ungroup() %>% 
+  mutate(percent = n/sum(n)) %>% 
+  arrange(desc(percent))
+```
+
+```{r}
+snp_sol %>% 
+  filter(fdr != -1) %>% 
+  arrange(neglog10p)
+```
+
+
+## Manhattan plot of $$-log_{10}(p-value)$$
+
+```{r, fig.width = 11, fig.height = 6.16}
+manall <- hair_manhattan(df = snp_sol, y_var = neglog10p, 
+               y_lab = latex2exp::TeX("$-log_{10}(p-value)$"), 
+               sigline = 4.430044)
+
+
+
+
+#ggsave(filename = here::here("figures/snp1101_p.png"), height = 6.16, width = 11)
+```
+
+## Q-Q plot
+
+```{r}
+ggqq(pvector = snp_sol$p_value)
+```
+
+
+## How many passing variants near lead SNP?
+
+```{r}
+snp_sol %>%
+  filter(fdr != -1) %>%
+  filter(chr == 5) %>%
+  filter(neglog10p>=5) %>% 
+  arrange(desc(neglog10p)) %>%
+  mutate(in_peak =
+           case_when(between(pos, (18586765 - 150000), (18586765 + 150000)) ~ TRUE,
+                     TRUE ~ FALSE)) %>%
+  filter(in_peak == TRUE)
+
+```
+
+# Nearby genes
+
+
+```{r, eval=FALSE, echo=FALSE}
+hair_genes %>% 
+  write_csv(here::here("data/derived_data/hair_genes.csv"))
+
+hair_genes %>% 
+  select(genename) %>% 
+  write_csv(here::here("data/derived_data/hair_genename.csv"), col_names = FALSE)
+
+```
+
+## How many unique genes?
+
+```{r}
+
+hair_genes %>% 
+  distinct(gene) %>% 
+  arrange(gene) 
+
+```
+
+## How many significant variants are within genes?
+
+```{r}
+snp_sol %>%
+  filter(fdr != -1) %>%
+  filter(neglog10p >= 5) %>% 
+  left_join(hair_genes %>% 
+              filter(distance == 0)) %>% 
+  select(gene, distance, everything()) %>% 
+  group_by(chr) %>% 
+  tally(sort = TRUE)
+```
+
+
+# ClueGO results
+
+```{r}
+cluego %>% 
+  distinct(go_term, ontology_source, corrected_term_p) %>% 
+  arrange(corrected_term_p)
+```
+
+```{r}
+readxl::read_excel(here::here("data/derived_data/ClueGOResultTable.xls")) %>% 
+  select(Term = GOTerm,
+         `Ontology source` = `Ontology Source`, 
+         `Benjamini-Hochberg corrected term p-value` = `Term PValue Corrected with Benjamini-Hochberg`,
+         `Associated genes` = `Associated Genes Found`
+         ) %>% 
+  mutate(`Ontology source` = if_else(`Ontology source` == "GO_BiologicalProcess-_11.01.2018_00h00", "GO Biological Processes", "KEGG"),
+         `Associated genes` = str_remove_all(`Associated genes`, "\\[|\\]")) %>% 
+  distinct() %>% 
+  writexl::write_xlsx(here::here("data/derived_data/manuscript_table_3.xlsx"))
+```
+
+
+# String interactions
+
+```{r}
+string_interact
+```
+
+## Keratin genes
+
+```{r}
+string_interact %>% 
+  filter_at(vars(c("node1", "node2")), all_vars(str_detect(., "KRT")))
+```
+
+
+# Commentary
+
+## GSE figure
+
+> All
+
+```{r, fig.width = 11, fig.height = 6.16}
+manall <- hair_manhattan(df = snp_sol, y_var = neglog10p, 
+               y_lab = latex2exp::TeX("$-log_{10}(p-value)$"), 
+               sigline = 4.430044)
+```
+
+```{r}
+axisdfall <-
+  snp_sol %>%
+  # Add chromosome length for plotting
+  chr_len() %>%
+  group_by(chr) %>%
+  summarize(center = (max(BPcum) + min(BPcum)) / 2)
+
+dfall <-
+  snp_sol %>%
+  chr_len() %>%
+  # Alternating chromosome color
+  mutate(chrcolor =
+           case_when(chr %in% c(seq(
+             from = 1, to = 29, by = 2
+           )) ~ "#C2D9CD",
+           chr %in% c(seq(
+             from = 2, to = 29, by = 2
+           )) ~ "#538797"))
+```
+
+```{r}
+manall <-
+  dfall %>%
+  ggplot(aes(x = BPcum,
+             y = neglog10p)) +
+  geom_point(aes(color = chrcolor), alpha = 0.75, size = 0.4) +
+  scale_color_identity() +
+  # Every 3 chromosomes gets a label
+  scale_x_continuous(label = axisdfall$chr[c(TRUE, FALSE)],
+                     breaks = axisdfall$center[c(TRUE, FALSE)]) +
+  theme_classic() +
+  theme(
+    plot.title = element_blank(),
+    plot.subtitle = element_blank(),
+    axis.title.y = element_text(size = 7,
+                                margin = margin(
+      t = 0,
+      r = 1,
+      b = 0,
+      l = 0
+    )),
+    axis.title.x = element_blank(),
+    axis.text = element_text(size = 5),
+  ) +
+  labs(x = NULL,
+       y = latex2exp::TeX("$-log_{10}(p-value)$"),
+       title = NULL) +
+  geom_hline(yintercept = 4.430044,
+             color = "red",
+             size = 0.25)
+
+```
+
+> Chromosome 5 
+
+```{r, fig.width = 11, fig.height = 6.16}
+man5 <- 
+  snp_sol %>%
+  filter(chr == 5) %>%
+  ggplot(aes(x = pos,
+             y = neglog10p)) +
+  geom_point(color = "#C2D9CD", alpha = 0.75, size = 0.4) +
+  scale_x_continuous(
+    breaks = c(0, 25000000, 50000000, 75000000, 100000000, 120000000),
+    labels = c("0 Kb",
+               "25 Kb",
+               "50 Kb",
+               "75 Kb",
+               "100 Kb",
+               "120 Kb")
+  ) +
+  theme_classic() +
+  theme(
+    axis.title.y = element_text(
+      size = 7,
+      margin = margin(
+      t = 0,
+      r = 1,
+      b = 0,
+      l = 0
+    )),
+    axis.title.x = element_blank(),
+    axis.text = element_text(size = 5)
+  ) +
+  labs(x = NULL,
+       y = latex2exp::TeX("$-log_{10}(p-value)$"),
+       title = NULL
+         ) +
+  geom_hline(yintercept = 4.430044,
+             color = "red",
+             size = 0.25)
+```
+
+> Two panel figure for manuscript
+
+```{r, fig.width=3.34646, fig.height=2.00787}
+
+
+manall/man5 + plot_annotation(tag_levels = c("a")) & 
+  theme(plot.tag = element_text(size = 7),
+        plot.margin = margin(t = 0, b = 0, l = 0.75, r = 1, unit = "mm"))
+
+#ggsave(filename = here::here("figures/figure6.snp1101_p.tiff"), height = 51, width = 85, units = "mm") 
+
+```
+
+

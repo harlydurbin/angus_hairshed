@@ -1,0 +1,317 @@
+---
+title: "Hair shedding on & off fescue"
+author: "Harly Durbin"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    df_print: paged
+    code_folding: hide
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(rlang)
+library(lubridate)
+library(glue)
+library(magrittr)
+library(purrr)
+library(readxl)
+library(ggplot2)
+library(corrr)
+library(tidylog)
+
+source(here::here("source_functions/melt_aireml.R"))
+source(here::here("source_functions/calculate_heritability.R"))
+source(here::here("source_functions/parse_renf90table.R"))
+
+
+is.wholenumber <- function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
+
+round_any <- function(x, accuracy, f = round){f(x/accuracy)*accuracy}
+
+options(scipen = 999)
+
+```
+
+# Notes & questions
+
+
+
+# Setup
+
+```{r}
+fescue_start <-
+  read_rds(here::here("data/derived_data/angus_join.rds")) %>%
+  # Have to explicitly list on or off fescue
+  filter(!is.na(toxic_fescue)) %>% 
+  filter(sex == "F") %>%
+  mutate(
+    age_group =
+      case_when(
+        # Heifers and yearlings
+        age == 1 ~ "yearling",
+        age == 2 ~ "fch",
+        age == 3 ~ "three",
+        age >= 4 ~ "mature"
+      )
+  ) %>%
+  left_join(
+    read_excel(here::here("data/derived_data/score_windows2.xlsx")) %>%
+      mutate(date_score_recorded = lubridate::ymd(date_score_recorded)) %>%
+      select(farm_id, year, date_score_recorded, score_group)
+  ) %>%
+  mutate(score_group = tidyr::replace_na(score_group, 1)) %>%
+  mutate(
+    cg = glue("{farm_id}{year}{calving_season}{age_group}{score_group}"),
+    cg_num = as.integer(factor(cg))
+  ) %>%
+  group_by(cg) %>% 
+  # At least 5 animals per CG
+  filter(n() >= 5) %>% 
+  # Remove CGs with no variation
+  filter(var(hair_score) != 0) %>% 
+  ungroup()
+
+```
+
+
+```{r}
+fescue_sol <-
+  read_table2(
+        here::here("data/derived_data/fescue/bivariate/solutions"),
+        skip = 1,
+        col_names = c("trait", "effect", "id", "solution")) %>% 
+  mutate(
+    trait = if_else(trait == 1, "YES", "NO"),
+    effect = case_when(
+      effect == 1 ~ "cg",
+      effect == 2 ~ "bv",
+      effect == 3 ~ "pe"
+    )
+  )
+```
+
+# Fescue calculated as a fixed effect
+
+```{r}
+fescue_fixed <-
+  read_table2(
+    here::here("data/derived_data/fescue/fixed/solutions"),
+    skip = 1,
+    col_names = c("trait", "effect", "id", "solution")
+  ) %>%
+  mutate(effect = case_when(
+    effect == 1 ~ "cg",
+    effect == 2 ~ "fescue",
+    effect == 3 ~ "bv",
+    effect == 4 ~ "pe"
+  )) %>% 
+  filter(effect == "fescue") %>%
+  left_join(parse_renf90table(
+    path = here::here("data/derived_data/fescue/fixed/renf90.tables"),
+    effect = 2
+  ),
+  by = c("id" = "id_renamed")) %>%
+  select(`Toxic fescue status` = id_original,
+         Solution = solution)
+```
+
+```{r}
+fescue_fixed
+```
+
+
+# Genetic correlation
+
+
+```{r}
+gen_corr <-
+  read_table2(here::here("data/derived_data/fescue/bivariate/airemlf90.fescue_bivariate.log"),
+            skip = 7,
+            n_max = 2,
+            col_names = c("Toxic fescue = YES", "Toxic fescue = NO")) %>%
+  mutate(rowname = colnames(.)) %>% 
+  tibble::column_to_rownames(var = "rowname") 
+
+gen_corr
+
+
+```
+
+## Breeding value on fescue vs. off fescue
+
+```{r, fig.width=10, fig.height=8}
+
+fescue_sol %>% 
+  filter(effect == "bv") %>% 
+  mutate(trait = str_to_lower(trait)) %>% 
+  select(-effect) %>% 
+  tidyr::pivot_wider(
+    names_from = trait,
+    names_prefix = "sol_",
+    values_from = solution
+  ) %>% 
+  ggplot(aes(
+    x = sol_yes,
+    y = sol_no
+    )) +
+  geom_hex(aes(fill = stat(count)),
+           bins = 65) +
+  viridis::scale_fill_viridis(option = "inferno",
+                              direction = 1,
+                              begin = 0.2,
+                              labels = scales::comma
+                              ) +
+  geom_abline(slope = 1,
+              size = 1,
+              linetype = "twodash") +
+  lims(
+    x = c(-1.8, 1.8),
+    y = c(-1.8, 1.8)
+       ) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(size = 28,
+                              face = "italic"),
+    plot.subtitle = element_text(size = 20,
+                                 margin = margin(
+                                   t = 0,
+                                   r = 0,
+                                   b = 13,
+                                   l = 0
+                                 )),
+    legend.title = element_text(size = 18),
+    legend.text = element_text(size = 14),
+    axis.title = element_text(size = 22),
+    axis.title.y = element_text(margin = margin(
+      t = 0,
+      r = 13,
+      b = 0,
+      l = 0
+    )),
+    axis.title.x = element_text(margin = margin(
+      t = 13,
+      r = 0,
+      b = 0,
+      l = 0
+    )),
+    axis.text = element_text(size = 16)
+  ) +
+  labs(x = "Breeding value on fescue",
+       y = "Breeding value off fescue",
+       fill = "Count",
+       title = "Estimated hair shedding breeding values:\non vs. off fescue"
+       )
+
+  
+```
+
+> Correlation between breeding values
+
+```{r}
+biv_corr <- 
+  fescue_sol %>% 
+  filter(effect == "bv") %>% 
+  mutate(trait = str_to_lower(trait)) %>% 
+  select(-effect) %>% 
+  tidyr::pivot_wider(
+    names_from = trait,
+    names_prefix = "sol_",
+    values_from = solution
+  ) %>% 
+  select(-id) %>% 
+  set_names(c("Toxic fescue = YES", "Toxic fescue = NO")) %>% 
+  corrr::correlate(diagonal = 1) %>% 
+  tibble::column_to_rownames(var = "rowname") 
+```
+
+```{r}
+biv_corr
+```
+
+
+# Variance components, heritability, and repeatability
+
+```{r}
+var_cov <-
+  melt_aireml(
+  path = here::here("data/derived_data/fescue/bivariate/airemlf90.fescue_bivariate.log"),
+  effect2 = c("yes_dir", "no_dir"),
+  effect3 = c("yes_pe", "no_pe"),
+  resids = c("yes_res", "no_res")
+)
+```
+
+```{r}
+var_cov %>% 
+  filter(val1 == val2) %>% 
+  separate(val1, into = c("Toxic fescue status", "effect"), sep = "_") %>% 
+  select(`Toxic fescue status`, effect, var_cov) %>% 
+  tidyr::pivot_wider(names_from = effect, values_from = var_cov) %>% 
+  rename(Genetic = dir,
+         `Permanent environment` = pe,
+         Residual = res) %>% 
+  mutate(`Toxic fescue status` = str_to_upper(`Toxic fescue status`)) %>% 
+  arrange(`Toxic fescue status`)
+
+```
+
+```{r}
+herit <-
+  var_cov %>% 
+  biv_heritability(abbrvs = c("yes", "no"), descs = c("YES", "NO"), pe = TRUE) %>% 
+  rename(`Toxic fescue status` = key)
+```
+
+
+```{r}
+herit
+```
+
+
+
+# Commentary
+
+  Cattle in heat-stressed regions but not exposed to endophyte-infected fescue demonstrate similar benefits from early summer hair shedding, but it is unclear if the biological mechanisms governing hair shedding in response to fescue toxicosis and heat stress are the same. This could have implications for genetic evaluation, as it might require that some hair shedding score observations treated as separate traits. In order to clarify this relationship, we calculated the covariance and genetic corrletation between hair shedding score on toxic fescue and off toxic fescue using AIREMLF90 using the bivariate model below.  
+  
+  $$y_t = Xb + Z_1u + Z_2p + e$$
+
+* $t$ is toxic fescue status (yes or no)
+* $y$ is hair shedding score
+* $b$ is contemporary group
+* $u$ is additive genetic effect
+* $p$ is permanent environment effect
+* $e$ is random residual
+
+Additionally, we calculated a univariate model with fescue grazing status fit as a fixed effect.
+  
+  $$y = X_1b + X_2f + Z_1u + Z_2p + e$$
+
+* $y$ is hair shedding score
+* $b$ is contemporary group
+* $f$ is toxic fescue status (yes or no)
+* $u$ is additive genetic effect
+* $p$ is permanent environment effect
+* $e$ is random residual  
+  
+  In both models, only females with known toxic fescue grazing status were retained for analysis. Contemporary groups were defined as the combination of farm ID, year, calving season, age group, and score group. Contemporary groups with fewer than five animals or no variation were discarded, resulting in `r fescue_start %>% filter(toxic_fescue == "YES") %>% n_distinct() %>% scales::comma()` observations recorded on toxic fescue and `r fescue_start %>% filter(toxic_fescue == "NO") %>% n_distinct() %>% scales::comma()` observations recorded off toxic fescue. `r fescue_start %>% group_by(registration_number) %>% filter(n_distinct(toxic_fescue) > 1) %>% ungroup() %>% select(registration_number) %>% n_distinct(.) %>% english::as.english(.) %>% stringr::str_to_sentence(.)` animals had observations over multiple years both on and off toxic fescue.  
+
+```{r}
+fescue_start %>% 
+  group_by(toxic_fescue) %>% 
+  summarise(`n animals` = scales::comma(n_distinct(registration_number)),
+            `n observations` = scales::comma(n())) %>% 
+  rename(`Toxic fescue status` = toxic_fescue)
+```
+  
+  When treated as separate traits, hair shedding on and off fescue have similar estimated heritabilities and a high genetic correlation (`r gen_corr[1, 2] %>% scales::percent()`). Further, the correlation between breeding values on and off fescue is `r biv_corr[1, 2] %>% scales::percent()`.  
+  Generally, phenotypic variation and estimates of genetic variation are higher when made in stressful environments, as stress increases the potential for expression of genetic differences. The total variation in hair shedding on fescue is slightly higher than hair shedding off fescue, which suggests that stress is higher for cattle grazing toxic fescue than those under heat stress alone. This is supported by solutions obtained by the model where fescue grazing status is fit as a fixed effect.  
+  The estimated permanent environment effect (and therefore, estimated repeatability) is much higher for hair shedding on toxic fescue. This might be explained by a higher contribution of non-additive genetic effects (i.e., epistatic and dominance effects) to variation in hair shedding on toxic fescue vs. off toxic fescue. Alternatively, it's possible that certain permanent environment effects (i.e., physiological differences between animals as a results of illness early in life) don't manifest until stress reaches a certain threshold.  
+
+

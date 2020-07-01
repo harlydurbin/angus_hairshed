@@ -1,0 +1,9 @@
+aireml_path: "~/bin/airemlf90"
+
+renumf90_path: "~/bin/renumf90"
+
+model: ["null", "years_factor", "bif_age", "four_groups"]
+
+#model: ["years_factor"]
+
+master_geno: "data/derived_data/genotypes.imputed_hair.txt"

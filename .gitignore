@@ -1,0 +1,11 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+talks_articles/*
+*.ftpconfig
+data/derived_data/191101.AN_ped.xlsx
+data/derived_data/reg_search.xlsx
+data/derived_data/season_search.xlsx
+*.pptx
+data/raw_data/macneil_HCS.pdf

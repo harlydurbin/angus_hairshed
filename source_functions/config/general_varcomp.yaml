@@ -1,0 +1,7 @@
+aireml_path: "~/bin/airemlf90"
+
+model: ["normal", "collapsed"]
+
+renumf90_path: "~/bin/renumf90"
+
+master_geno: "data/derived_data/genotypes.imputed_hair.txt"

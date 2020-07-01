@@ -1,0 +1,319 @@
+---
+title: "Effect of calving season"
+author: "Harly Durbin"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    df_print: paged
+    code_folding: hide
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(rlang)
+library(lubridate)
+library(glue)
+library(magrittr)
+library(purrr)
+library(readxl)
+library(ggplot2)
+library(corrr)
+library(tidylog)
+
+source(here::here("source_functions/melt_aireml.R"))
+source(here::here("source_functions/calculate_heritability.R"))
+source(here::here("source_functions/parse_renf90table.R"))
+
+
+is.wholenumber <- function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
+
+round_any <- function(x, accuracy, f = round){f(x/accuracy)*accuracy}
+
+options(scipen = 999)
+
+```
+
+# Notes & questions
+
+* ~~Should I drop yearlings?~~
+* Spring solution - fall solution = 0.1695279
+    + For comparison, yes fescue solution - no fescue solution = .69316
+    + Fall-spring genetic corr v slightly lower than yes-no genetic corr tho
+
+# Setup
+
+
+```{r}
+calving_start <-
+  read_rds(here::here("data/derived_data/angus_join.rds")) %>% 
+  filter(sex == "F") %>% 
+  filter(!is.na(calving_season)) %>% 
+  filter(age != 1) %>% 
+  mutate(
+    age_group = 
+      case_when(
+        # Heifers and yearlings
+        age == 1 ~ "yearling",
+        age == 2 ~ "fch", 
+        age == 3 ~ "three", 
+        age >= 4 ~ "mature"
+      )
+  ) %>% 
+  left_join(
+    read_excel(here::here("data/derived_data/score_windows2.xlsx")) %>% 
+      mutate(date_score_recorded = lubridate::ymd(date_score_recorded)) %>% 
+      select(farm_id, year, date_score_recorded, score_group)
+              ) %>% 
+  mutate(score_group = tidyr::replace_na(score_group, 1)) %>% 
+  mutate(
+    cg = glue("{farm_id}{year}{age_group}{score_group}{toxic_fescue}"),
+    cg_num = as.integer(factor(cg))
+         ) %>% 
+  group_by(cg) %>% 
+  # At least 5 animals per CG
+  filter(n() >= 5) %>% 
+  # Remove CGs with no variation
+  filter(var(hair_score) != 0) %>% 
+  ungroup() 
+  
+  
+
+
+```
+
+```{r}
+calving_sol <-
+  read_table2(
+        here::here("data/derived_data/calving_season/bivariate/solutions"),
+        skip = 1,
+        col_names = c("trait", "effect", "id", "solution")) %>% 
+  mutate(
+    trait = if_else(trait == 1, "SPRING", "FALL"),
+    effect = case_when(
+      effect == 1 ~ "cg",
+      effect == 2 ~ "bv",
+      effect == 3 ~ "pe"
+    )
+  )
+```
+
+# Summary statistics
+
+> Raw hair shedding scores
+
+```{r}
+calving_start %>% 
+  group_by(calving_season) %>% 
+  summarise(
+    `Mean score` = mean(hair_score),
+    `SD score` = sd(hair_score), 
+    `n scores` = scales::comma(n())
+  ) %>% 
+  rename(`Calving season` = calving_season)
+```
+
+
+
+# Calving season calculated as a fixed effect
+
+```{r}
+calving_fixed <-
+  read_table2(
+    here::here("data/derived_data/calving_season/fixed/solutions"),
+    skip = 1,
+    col_names = c("trait", "effect", "id", "solution")
+  ) %>%
+  mutate(effect = case_when(
+    effect == 1 ~ "cg",
+    effect == 2 ~ "season",
+    effect == 3 ~ "bv",
+    effect == 4 ~ "pe"
+  )) %>%
+  filter(effect == "season") %>%
+  left_join(parse_renf90table(
+    path = here::here("data/derived_data/calving_season/fixed/renf90.tables"),
+    effect = 2
+  ),
+  by = c("id" = "id_renamed")) %>%
+  select(`Calving season` = id_original,
+         Solution = solution)
+
+```
+
+```{r}
+calving_fixed
+```
+
+# Genetic correlation
+
+
+```{r}
+gen_corr <-
+  read_table2(here::here("data/derived_data/calving_season/bivariate/airemlf90.calving_season.bivariate.log"),
+            skip = 7,
+            n_max = 2,
+            col_names = c("Spring", "Fall")) %>%
+  mutate(rowname = colnames(.)) %>% 
+  tibble::column_to_rownames(var = "rowname")
+```
+
+
+```{r}
+gen_corr
+
+```
+
+## Breeding value spring calving vs. fall calving
+
+```{r, fig.width=10, fig.height=8}
+
+calving_sol %>% 
+  filter(effect == "bv") %>% 
+  mutate(trait = str_to_lower(trait)) %>% 
+  select(-effect) %>% 
+  tidyr::pivot_wider(
+    names_from = trait,
+    names_prefix = "sol_",
+    values_from = solution
+  ) %>% 
+  ggplot(aes(
+    x = sol_spring,
+    y = sol_fall
+    )) +
+  geom_hex(aes(fill = stat(count)),
+           bins = 65) +
+  viridis::scale_fill_viridis(option = "inferno",
+                              direction = 1,
+                              begin = 0.2,
+                              labels = scales::comma
+                              ) +
+  geom_abline(slope = 1,
+              size = 1,
+              linetype = "twodash") +
+  lims(
+    x = c(-1.8, 1.8),
+    y = c(-1.8, 1.8)
+       ) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(size = 28,
+                              face = "italic"),
+    plot.subtitle = element_text(size = 20,
+                                 margin = margin(
+                                   t = 0,
+                                   r = 0,
+                                   b = 13,
+                                   l = 0
+                                 )),
+    legend.title = element_text(size = 18),
+    legend.text = element_text(size = 14),
+    axis.title = element_text(size = 22),
+    axis.title.y = element_text(margin = margin(
+      t = 0,
+      r = 13,
+      b = 0,
+      l = 0
+    )),
+    axis.title.x = element_text(margin = margin(
+      t = 13,
+      r = 0,
+      b = 0,
+      l = 0
+    )),
+    axis.text = element_text(size = 16)
+  ) +
+  labs(x = "Spring calving breeding value",
+       y = "Fall calving breeding value",
+       fill = "Count",
+       title = "Estimated hair shedding breeding values:\nspring vs. fall calving"
+       )
+
+  
+```
+
+> Correlation between breeding values
+
+```{r}
+biv_corr <- 
+  calving_sol %>% 
+  filter(effect == "bv") %>% 
+  mutate(trait = str_to_lower(trait)) %>% 
+  select(-effect) %>% 
+  tidyr::pivot_wider(
+    names_from = trait,
+    names_prefix = "sol_",
+    values_from = solution
+  ) %>% 
+  select(-id) %>% 
+  set_names(c("Spring", "Fall")) %>% 
+  corrr::correlate(diagonal = 1) %>% 
+  tibble::column_to_rownames(var = "rowname") 
+```
+
+```{r}
+biv_corr
+```
+
+
+
+# Variance components, heritability, and repeatability
+
+```{r}
+var_cov <-
+  melt_aireml(
+  path = here::here("data/derived_data/calving_season/bivariate/airemlf90.calving_season.bivariate.log"),
+  effect2 = c("spring_dir", "fall_dir"),
+  effect3 = c("spring_pe", "fall_pe"),
+  resids = c("spring_res", "fall_res")
+)
+```
+
+```{r}
+var_cov %>% 
+  filter(val1 == val2) %>% 
+  separate(val1, into = c("Calving season", "effect"), sep = "_") %>% 
+  select(`Calving season`, effect, var_cov) %>% 
+  tidyr::pivot_wider(names_from = effect, values_from = var_cov) %>% 
+  rename(Genetic = dir,
+         `Permanent environment` = pe,
+         Residual = res) %>% 
+  mutate(`Calving season` = str_to_upper(`Calving season`)) %>% 
+  arrange(`Calving season`)
+
+```
+
+```{r}
+herit <-
+  var_cov %>% 
+  biv_heritability(abbrvs = c("spring", "fall"), descs = c("SPRING", "FALL"), pe = TRUE) %>% 
+  rename(`Calving season` = key)
+```
+
+
+```{r}
+herit
+```
+
+
+# Commentary
+
+  When no breeder-reported calving season was available, calving season was imputed using most recent natural birth calving date prior to the recorded score available in the AAA database. In these cases, spring calving was defined as January 1-June 30 and fall calving was defined as July 1-December 31. Yearling heifers were excluded from analysis. Records on yearling heifers were removed.    
+  Contemporary groups were defined as the combination of farm ID, year, age group, and score group. Contemporary groups with fewer than five animals or no variation were discarded, resulting in `r calving_start %>% filter(calving_season == "SPRING") %>% n_distinct() %>% scales::comma()` records on spring-calving cows and `r calving_start %>% filter(calving_season == "FALL") %>% n_distinct() %>% scales::comma()` records on fall-calving. `r calving_start %>% group_by(registration_number) %>% filter(n_distinct(calving_season) > 1) %>% ungroup() %>% select(registration_number) %>% n_distinct(.) %>% english::as.english(.) %>% stringr::str_to_sentence(.)` animals had observations over multiple years classified as both spring and fall calving.  
+
+```{r}
+calving_start %>% 
+  group_by(calving_season) %>% 
+  summarise(`n animals` = scales::comma(n_distinct(registration_number)),
+            `n observations` = scales::comma(n())) %>% 
+  rename(`Calving season` = calving_season)
+```
+
+* Calving season is an appropriate proxy for management group the absence of breeder-reported definitions. Therefore, we decided to include calving season in the definition of contemporary groups despite lack of evidence for stratification of hair shedding scores by calving season. 
+* One explanation for why fall calving might have higher scores: testosterone peaks before parturition, could delay onset of molt (Dery 2019)
+

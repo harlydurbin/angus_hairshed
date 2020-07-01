@@ -1,0 +1,531 @@
+---
+title: "Breeding value bias"
+author: "Harly Durbin"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    df_print: paged
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, cols.print = 6)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(rlang)
+library(lubridate)
+library(glue)
+library(magrittr)
+library(purrr)
+library(readxl)
+library(ggplot2)
+library(corrr)
+library(tidylog)
+
+
+```
+
+# Notes & questions
+
+![](../data/raw_data/bias_metrics.png)
+
+# Setup
+
+
+```{r}
+
+read_bias <-
+  function(iter_num)
+  {
+    
+    dropped <-
+      read_table2(here::here(glue(
+        "data/derived_data/bias/iter{iter_num}/data.txt"
+      )),
+      col_names = c("full_reg", "cg", "hair_score")) %>%
+      filter(hair_score == 0) %>%
+      pull(full_reg) %>%
+      unique()
+    
+    c(
+      glue("data/derived_data/bias/iter{iter_num}"),
+      "data/derived_data/general_varcomp/normal"
+    ) %>%
+      set_names("reduced", "full") %>%
+      purrr::imap(
+        ~ read_table2(
+          here::here(glue("{.x}/solutions")),
+          skip = 1,
+          col_names = c("trait", "effect", "id_renamed", "solution")
+        ) %>%
+          left_join(
+            read_table2(here::here(glue(
+              "{.x}/renadd02.ped"
+            )),
+            col_names = FALSE) %>%
+              select(id_renamed = 1, full_reg = 10)
+          ) %>%
+          mutate(analysis = .y)
+      ) %>%
+      reduce(bind_rows) %>%
+      filter(effect == 2) %>%
+      select(-trait,-effect,-id_renamed) %>%
+      pivot_wider(
+        values_from = solution,
+        names_from = analysis,
+        names_prefix = "solution_"
+      ) %>%
+      mutate(group = if_else(full_reg %in% dropped, "dropped", "kept"),
+             iter = iter_num)
+    
+  }
+```
+
+```{r}
+bias <-
+  c(1:10) %>% 
+  purrr::map(~ read_bias(iter_num = .x)) %>% 
+  reduce(bind_rows) %>% 
+  mutate(iter = forcats::fct_inorder(as.factor(iter)))
+```
+
+# Difference between full and reduced breeding values ($\mu_w - \mu_p$; $d_{w,p}$) {.tabset}
+
+> Expectation is 0
+
+```{r, fig.width= 12, fig.height= 6}
+bias %>% 
+  mutate(difference = abs(solution_full - solution_reduced),
+         group = str_to_sentence(group)) %>% 
+  ggplot(aes(
+    x = difference
+  )) +
+  geom_density(aes(fill = group),
+               alpha = 0.7) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(size = 28,
+                              face = "italic"),
+    legend.title = element_text(size = 18),
+    legend.text = element_text(size = 14),
+    axis.title = element_text(size = 22),
+    axis.title.y = element_text(margin = margin(
+      t = 0,
+      r = 13,
+      b = 0,
+      l = 0
+    )),
+    axis.title.x = element_text(margin = margin(
+      t = 13,
+      r = 0,
+      b = 0,
+      l = 0
+    )),
+    axis.text = element_text(size = 14),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) +
+  labs(
+    x = "Full breeding value - reduced breeding value",
+    y = "Kernel density",
+    fill = NULL
+  ) +
+  facet_wrap(~iter, nrow = 2)
+```
+
+## Reference animals ($d^r_{w,p}$)
+
+> Within iterations
+
+```{r}
+
+bias %>%
+  mutate(difference = solution_reduced - solution_full) %>%
+  filter(group == "kept") %>%
+  group_by(iter) %>%
+  summarise(
+    `Median abs. difference` = median(abs(difference)),
+    `Mean abs. difference` = mean(abs(difference)),
+    min = min(abs(difference)),
+    max = max(abs(difference))
+  ) %>%
+  mutate(`Range abs. difference` = max - min) %>%
+  select(-min, -max) %>%
+  rename(Iteration = iter) 
+  
+```
+
+> Across all iterations 
+
+```{r}
+
+bias %>%
+  mutate(difference = solution_reduced - solution_full) %>%
+  filter(group == "kept") %>%
+  summarise(
+    `Median abs. difference` = median(abs(difference)),
+    `Mean abs. difference` = mean(abs(difference)),
+    min = min(abs(difference)),
+    max = max(abs(difference))
+  ) %>%
+  mutate(`Range abs. difference` = max - min) %>%
+  select(-min, -max) 
+```
+
+## Validation animals (phenotype set to null; $d^v_{w,p}$)
+
+> Within iterations
+
+```{r}
+
+bias %>%
+  mutate(difference = solution_reduced - solution_full) %>%
+  filter(group == "dropped") %>%
+  group_by(iter) %>%
+  summarise(
+    `Median abs. difference` = median(abs(difference)),
+    `Mean abs. difference` = mean(abs(difference)),
+    min = min(abs(difference)),
+    max = max(abs(difference))
+  ) %>%
+  mutate(`Range abs. difference` = max - min) %>%
+  select(-min, -max) %>%
+  rename(Iteration = iter) 
+  
+```
+
+> Across all iterations 
+
+```{r}
+
+bias %>%
+  mutate(difference = solution_reduced - solution_full) %>%
+  filter(group == "dropped") %>%
+  summarise(
+    `Median abs. difference` = median(abs(difference)),
+    `Mean abs. difference` = mean(abs(difference)),
+    min = min(abs(difference)),
+    max = max(abs(difference))
+  ) %>%
+  mutate(`Range abs. difference` = max - min) 
+```
+
+# Regress breeding values from full on breeding values from reduced
+
+
+## Only validation animals (phenotype set to null; $b^v_{w,p}$) {.tabset}
+
+```{r}
+
+vallm <-
+  purrr::map(
+    .x = c(1:10),
+    ~ bias %>%
+      filter(group == "dropped", iter == .x) %>%
+      lm(solution_full ~ solution_reduced, data = .) %>%
+      summary(.)
+  )
+```
+
+```{r, results='asis'}
+
+for (i in 1:length(vallm)){
+  cat("###", i, " \n\n", "```")
+  print(vallm[[i]])
+  cat("```", " \n\n")
+}
+
+```
+
+
+## All animals in pedigree ($b_{w,p}$) {.tabset}
+
+> Expectation is one
+
+```{r}
+reflm <-
+  purrr::map(
+    .x = c(1:10),
+    ~ bias %>%
+      filter(iter == .x) %>%
+      lm(solution_full ~ solution_reduced, data = .) %>%
+      summary(.)
+  )
+```
+
+```{r, results='asis'}
+
+for (i in 1:length(reflm)){
+  cat("###", i, " \n\n", "```")
+  print(reflm[[i]])
+  cat("```", " \n\n")
+}
+
+```
+
+# Distribution of breeding values (only validation animals; $b^v_{w,p}$) 
+
+
+```{r, fig.width=10, fig.height=16, eval=FALSE}
+
+
+bias %>%
+  filter(group == "dropped") %>%
+  # Run lm and pull out slope/intercept for plotting
+  nest(-iter) %>%
+  mutate(
+    lm = purrr::map(data, ~ lm(solution_full ~ solution_reduced, data = .x)),
+    tidied = purrr::map(lm, ~ broom::tidy(.x)),
+    modintercept = purrr::map_dbl(tidied,
+                                  ~ .[.$term == "(Intercept)", "estimate"] %>%
+                                    pull(estimate)),
+    modslope = purrr::map_dbl(tidied,
+                              ~ .[.$term == "solution_reduced", "estimate"] %>%
+                                pull(estimate)),
+    rho_pw = purrr::map_dbl(
+      data,
+      ~ cor(.x$solution_full, .x$solution_reduced, use = "pairwise.complete.obs")
+    ),
+    #rholab = sprintf("%.2f", signif(rho_pw, digits = 2)),
+    #slopelab = sprintf("%.2f", signif(modslope, digits = 2))
+    rholab = paste0("rho^v[pw]==", "'", sprintf("%.2f", signif(rho_pw, digits = 2)), "'"),
+    slopelab = paste0("b^v[pw]==", "'", sprintf("%.2f", signif(modslope, digits = 2)), "'"),
+  ) %>%
+  select(-lm,-tidied) %>%
+  unnest(data) %>%
+  ggplot(aes(x = solution_reduced,
+             y = solution_full)) +
+  geom_hex(aes(fill = stat(count)),
+           bins = 40) +
+  viridis::scale_fill_viridis(
+    option = "inferno",
+    direction = 1,
+    begin = 0.2,
+    labels = scales::comma
+  ) +
+  geom_abline(slope = 1,
+              size = 1,
+              linetype = "twodash") +
+  geom_abline(aes(slope = modslope, intercept = modintercept),
+              size = 1,
+              # linetype = "twodash",
+              color = "red") +
+  lims(x = c(-1.75, 1.75),
+       y = c(-1.75, 1.75)) +
+  theme_classic() +
+  theme(
+    legend.title = element_text(size = 18),
+    legend.text = element_text(size = 14),
+    axis.title = element_text(size = 22),
+    axis.title.y = element_text(margin = margin(
+      t = 0,
+      r = 13,
+      b = 0,
+      l = 0
+    )),
+    axis.title.x = element_text(margin = margin(
+      t = 13,
+      r = 0,
+      b = 0,
+      l = 0
+    )),
+    axis.text = element_text(size = 16),
+    strip.text.x = element_text(size = 16)
+  ) +
+  # https://stackoverflow.com/questions/43104021/stop-parsing-out-zeros-after-decimals-in-ggplot2s-annotate
+  # https://stackoverflow.com/questions/15397789/keeping-trailing-zeroes-with-plotmath
+  geom_text(
+    x = -1.4,
+    y = 1.4,
+    aes(label = rholab),
+    size = 5.5,
+    parse = TRUE
+  ) +
+  geom_text(
+    x = -1.4,
+    y = 1,
+    aes(label = slopelab),
+    size = 5.5,
+    parse = TRUE
+  ) +
+  labs(
+    x = latex2exp::TeX("Whole breeding value ($\\hat{\\mu_w}$)"),
+    y = latex2exp::TeX("Partial breeding value ($\\hat{\\mu_p}$)"),
+    fill = "Count"
+  ) +
+  facet_wrap( ~ iter, nrow = 5, ncol = 2)
+
+ggsave(filename = here::here("figures/figure4.rho_pw.tiff"), height = 16, width = 10)
+
+```
+
+
+
+# Correlations {.tabset}
+
+$$\rho_{p,w} = \frac{cov(\hat{\mu_p}, \hat{\mu_w})}{\sqrt{var(\hat{\mu_p})var(\hat{\mu_w})}}$$
+
+```{r,eval=FALSE, echo=FALSE}
+
+# I'm an idiot and am leaving this function here as a form of self-shaming
+rho_pw <-
+  function(df){
+    
+    numerator <-
+      cov(df$solution_full, df$solution_reduced)
+    
+    varp <- var(df$solution_reduced)
+    
+    varw <- var(df$solution_full)
+    
+    denominator <-
+      sqrt(varw*varp)
+    
+    rho <- numerator/denominator
+    
+    return(rho)
+    
+  }
+```
+
+## Only validation animals (phenotype set to null) ($\rho^{v}_{w, p}$) 
+
+```{r}
+bias %>% 
+  filter(group == "dropped") %>% 
+  group_by(iter) %>% 
+  summarise(cor = cor(solution_full, solution_reduced)) %>% 
+  ungroup() %>% 
+  arrange(cor) %>% 
+  rename(`$\\rho^{v}_{w, p}$` = cor) %>% 
+  knitr::kable(escape = FALSE)
+```
+
+
+## All animals in pedigree ($\rho_{w,p}$)
+
+```{r}
+bias %>% 
+  group_by(iter) %>% 
+  summarise(cor = cor(solution_full, solution_reduced)) %>% 
+  ungroup() %>% 
+  arrange(cor) %>% 
+  rename(`$\\rho^{v}_{w, p}$` = cor) %>% 
+  knitr::kable(escape = FALSE)
+```
+
+
+
+# Commentary
+
+* In each iteration, nulled out phenotypes for 2,112 randomly selected animals (25% of total)
+
+---
+
+Figure for GSE manuscript
+
+```{r, fig.width=10, fig.height=16}
+lmbias <-
+  bias %>%
+  filter(group == "dropped") %>%
+  # Run lm and pull out slope/intercept for plotting
+  nest(-iter) %>%
+  mutate(
+    lm = purrr::map(data, ~ lm(solution_full ~ solution_reduced, data = .x)),
+    tidied = purrr::map(lm, ~ broom::tidy(.x)),
+    modintercept = purrr::map_dbl(tidied,
+                                  ~ .[.$term == "(Intercept)", "estimate"] %>%
+                                    pull(estimate)),
+    modslope = purrr::map_dbl(tidied,
+                              ~ .[.$term == "solution_reduced", "estimate"] %>%
+                                pull(estimate)),
+    rho_pw = purrr::map_dbl(
+      data,
+      ~ cor(.x$solution_full, .x$solution_reduced, use = "pairwise.complete.obs")
+    ),
+    #rholab = sprintf("%.2f", signif(rho_pw, digits = 2)),
+    #slopelab = sprintf("%.2f", signif(modslope, digits = 2))
+    rholab = paste0("rho^v[pw]==", "'", sprintf("%.2f", signif(rho_pw, digits = 2)), "'"),
+    slopelab = paste0("b^v[pw]==", "'", sprintf("%.2f", signif(modslope, digits = 2)), "'"),
+  ) %>%
+  select(-lm,-tidied) %>%
+  unnest(data)
+```
+
+
+```{r}
+lmbias %>%
+  ggplot(aes(x = solution_reduced,
+             y = solution_full)) +
+  geom_hex(aes(fill = stat(count)),
+           bins = 40) +
+  viridis::scale_fill_viridis(
+    option = "inferno",
+    direction = 1,
+    begin = 0.2,
+    labels = scales::comma
+  ) +
+  geom_abline(slope = 1,
+              size = 0.25,
+              linetype = "twodash") +
+  geom_abline(aes(slope = modslope, intercept = modintercept),
+              size = 0.25,
+              # linetype = "twodash",
+              color = "red") +
+  lims(x = c(-1.75, 1.75),
+       y = c(-1.75, 1.75)) +
+  theme_classic() +
+  theme(
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    #legend.box = "vertical",
+    legend.key.size = unit(0.5, "cm"),
+    legend.spacing.y = unit(0.5, 'cm'),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 5),
+    # top, right, bottom, left
+    axis.title = element_text(size = 8),
+    axis.title.y = element_text(margin = margin(
+      t = 0,
+      r = 0.5,
+      b = 0,
+      l = 0.5
+    )),
+    axis.title.x = element_text(margin = margin(
+      t = 0.5,
+      r = 0,
+      b = 0,
+      l = 0
+    )),
+    axis.text = element_text(size = 5),
+    strip.text.x = element_text(size = 6, margin = margin(t = 0.1, b = 0.1, l = 0, r = 0, "mm")),
+    plot.margin = margin(t = 0, b = 0, l = 1, r = 1, unit = "mm")
+  ) +
+  # https://stackoverflow.com/questions/43104021/stop-parsing-out-zeros-after-decimals-in-ggplot2s-annotate
+  # https://stackoverflow.com/questions/15397789/keeping-trailing-zeroes-with-plotmath
+  # geom_text(
+  #   x = -1.4,
+  #   y = 1.4,
+  #   aes(label = rholab),
+  #   size = 5.5,
+  #   parse = TRUE
+  # ) +
+  # geom_text(
+  #   x = -1.4,
+  #   y = 1,
+  #   aes(label = slopelab),
+  #   size = 5.5,
+  #   parse = TRUE
+  # ) +
+  labs(
+    x = "test",#latex2exp::TeX("Whole breeding value ($\\hat{\\mu_w}$)"),
+    y = "test", #latex2exp::TeX("Partial breeding value ($\\hat{\\mu_p}$)"),
+    fill = NULL
+  ) +
+  facet_wrap( ~ iter, nrow = 5, ncol = 2)
+
+ggsave(filename = here::here("figures/figure4.rho_pw.tiff"), height = 85, width = 53.125, units = "mm")
+
+```

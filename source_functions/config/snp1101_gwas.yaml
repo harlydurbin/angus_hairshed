@@ -1,0 +1,11 @@
+blupf90_dir: "data/derived_data/general_varcomp/normal"
+
+animal_effect: "2"
+
+master_geno: "data/raw_data/imputed_F250+/genotypes_imp_short.txt"
+
+master_mapfile: "data/raw_data/imputed_F250+/blupf90_snp_map.txt"
+
+ctr_file: "source_functions/par/snp1101_gwas.ctr"
+
+snp1101_path: "/usr/angus/snp1101"

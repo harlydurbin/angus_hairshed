@@ -1,0 +1,585 @@
+---
+title: "Hair shedding joining and import"
+author: "Harly Durbin"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    df_print: paged
+    code_folding: show
+header-includes:
+  - \setlength{\parindent}{4em}
+  - \setlength{\parskip}{0em}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(rlang)
+library(lubridate)
+library(ggplot2)
+library(glue)
+library(magrittr)
+library(purrr)
+library(readxl)
+library(tidylog)
+
+source(here::here("source_functions/coalesce_join.R"))
+
+fescue_belt <- 
+  read_excel(here::here("data/raw_data/fescue_coordinates.xlsx"))
+
+is.wholenumber <- function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
+
+```
+
+```{r, warning=FALSE, message=FALSE}
+source(here::here("source_functions/hair_ped.R"))
+
+```
+
+# Notes & questions
+
+* ~~Batch effects from non-integer data~~?
+    + ~~Could try building in an effect for study/source~~?
+    + Or does contemporary group take care of that?
+* How is foot score treated? Docility? As continuous? 
+* Changed `toxic_fescue` to `NO` for Texas scores
+* Figure colors:
+    + `#538797`: darker blue
+    + `#C2D9CD`: lighter blue
+    + `#FCAF1`: off-white
+    + `#FF842A`: orange
+    + `#FED55D`: yellow
+---
+
+* Age key based [here](http://www.angus.org/Nce/Documents/ByTheNumbers0108.pdf) and [BIF age of dam cutoffs](https://beefimprovement.org/wp-content/uploads/2013/07/BIFGuidelinesFinal_updated0916.pdf#23)
+
+```{r}
+# Had to do this programatically my brain was melting
+age_key <- 
+  tibble(class = 1:25) %>% 
+  mutate(
+    # The actual day you start being an age
+    actual_start = class*365,
+    # Mininum is higher for yearling
+    min =
+      case_when(
+        class == 1 ~ 274,
+        TRUE ~ actual_start - 90
+      ),
+    max = actual_start + 274,
+    total_days = max - min
+    ) %>% 
+  select(age_class = class, min, actual_start, max, total_days)
+
+```
+
+```{r}
+age_key
+```
+
+
+# Mizzou data
+
+```{r}
+animal_table <- read_rds(here::here("data/raw_data/animal_table.rds"))
+```
+
+
+* Pull records from Mizzou data where breed code is "AN" and/or listed breed association is "American Angus Association"
+* Correct some registration numbers after searching in Pro Rodeo & find AAA registration for animals cross-registered in other breed associations
+    + Drop hair scores from animals cancelled for parentage or not found
+
+```{r}
+mu_long <- 
+  # Mizzou hair shedding project cleaned data
+  read_rds(here::here("data/raw_data/cleaned.rds")) %>% 
+    # janky registration corrections I did by searching Pro Rodeo
+  left_join(animal_table %>%
+              select(Lab_ID, Reg, breed_assoc, breed_assoc_reg)) %>%
+  filter(breed_code == "AN" |
+           breed_assoc == "American Angus Association") %>%
+  filter(!farm_id %in% c("SAV", "BAT", "UMF")) %>%
+  # janky registration corrections I did by searching Pro Rodeo
+  left_join(
+    read_excel(here::here("data/derived_data/reg_search.xlsx"), col_types = "text") %>%
+      select(farm_id, animal_id, an_reg),
+    by = c("farm_id", "animal_id"),
+  ) %>%
+  # Remove if cancelled for parentage or not found
+  filter(an_reg != 0 | is.na(an_reg)) %>%
+  mutate(
+    # Pull from breed_assoc_reg (MU animal database)
+    registration_number = case_when(
+      # reg num found in Pro Rodeo
+      # breed_assoc_reg from MU animal database
+      # Diff breed reg, replace with Angus
+      !is.na(an_reg) ~ an_reg,
+      str_detect(breed_assoc_reg, "^1|^6") ~ breed_assoc_reg,
+      # NA, replace with Angus
+      is.na(registration_number) &
+        str_detect(Reg, "^1|^6") ~ Reg,      
+      TRUE ~ registration_number
+    ),
+    # Fix toxic_fescue, calving season, date score recorded for some farms
+    toxic_fescue =
+      case_when(
+        is.na(toxic_fescue) & farm_id %in% c("OHF", "GOF", "PVF") ~ "YES",
+        is.na(toxic_fescue) & farm_id %in% c("LAF") ~ "NO",
+        TRUE ~ toxic_fescue
+      ),
+    calving_season = 
+      case_when(
+        farm_id %in% c("UMCT", "HAF", "GOF") ~ "SPRING", 
+        TRUE ~ calving_season
+    ), 
+    date_score_recorded =
+      case_when(
+        is.na(date_score_recorded) & farm_id == "RCF" ~ ymd("2019-05-25"),
+        TRUE ~ date_score_recorded
+      ),
+  ) %>% 
+  # Remove if still no registration number
+  filter(!is.na(registration_number)) %>% 
+  # Remove if not an AAA or BIR reg
+  filter(str_detect(registration_number, "^1|^6")) %>% 
+  select(animal_id,
+         farm_id,
+         breed_code,
+         registration_number,
+         barcode,
+         sex,
+         date_score_recorded,
+         hair_score,
+         age,
+         calving_season,
+         toxic_fescue,
+         year,
+         Lab_ID) %>% 
+  group_by(registration_number, date_score_recorded) %>%
+  # Remove duplicates
+  filter(n() == 1) %>% 
+  ungroup()
+
+```
+
+# AGI Legacy data
+
+```{r}
+legacy_data <-
+  # Raw Excel file provided by Mike MacNeil
+  read_excel(here::here("data/raw_data/FinalFile(WW work)_MacNeil0619.xlsx"),
+             na = "0") %>%
+  janitor::clean_names() %>%
+  # Remove empty rows and columns
+  janitor::remove_empty(which = c("rows", "cols")) %>%
+  select(
+    farm_id = owner,
+    location,
+    registration_number = dam_reg,
+    animal_id = cow_id,
+    age = dam_bd,
+    date_score_recorded = date,
+    calf_dob = calf_bd,
+    contains("hc"),
+    region
+  ) %>%
+  # Convert from "wide" to "long" format:
+  # One row per score-r per day
+  reshape2::melt(
+    id = c(
+      "farm_id",
+      "location",
+      "registration_number",
+      "animal_id",
+      "age",
+      "date_score_recorded",
+      "calf_dob",
+      "region"
+    )
+  ) %>%
+  rename(scored_by = variable,
+         hair_score = value) %>%
+  mutate(
+    scored_by = as.character(scored_by),
+    registration_number = as.character(registration_number),
+    scored_by = case_when(
+      scored_by == "hcs" ~ "A",
+      scored_by == "hc_sa" ~ "B",
+      scored_by == "hc_sb" ~ "C"
+    )
+  ) %>%
+  # Remove empty rows
+  filter(!is.na(hair_score)) %>%
+  # Impute toxic_fescue
+  mutate(
+    year = lubridate::year(date_score_recorded),
+    date_score_recorded = ymd(date_score_recorded),
+    toxic_fescue =
+      case_when(
+        # Presumably no hot fescue in TX
+        region == "TX" ~ "NO",
+        # In previous hair shedding paper, authors indicated that the entire NCSU Upper Piedmont research station herd grazes hot fescue
+        farm_id %in% c("UPRS") ~ "YES",
+        TRUE ~ NA_character_
+      ),
+    # Only cows scored in AGI data
+    sex = "F",
+    # Infer age from birth date and date scored
+    age = as.integer(lubridate::time_length(
+      ymd(date_score_recorded) - ymd(age), unit = "years"
+    )),
+    # Infer calving season from calf dob
+    calving_season =
+      case_when(
+        between(
+          lubridate::month(calf_dob),
+          left = 1,
+          right = 6
+        ) ~ "SPRING",
+        between(
+          lubridate::month(calf_dob),
+          left = 7,
+          right = 12
+        ) ~ "FALL"
+      ),
+    # collapse/rename some farm ids
+    farm_id = 
+      case_when(
+        farm_id %in% c("QH") ~ "QuakerHill",
+        farm_id %in% c("4") ~ "Creswell",
+        farm_id %in% c("A") ~ "bradley3",
+        farm_id %in% c("B") ~ "RobertElliott",
+        farm_id %in% c("I") ~ "Woodall",
+        farm_id %in% c("F") ~ "Fleming",
+        TRUE ~ farm_id
+      )
+  ) %>% 
+  group_by(registration_number, date_score_recorded) %>%
+  # Take the mean of all scores for that day
+  mutate(hair_score = mean(hair_score)) %>%
+  ungroup() %>%
+  select(-scored_by) %>%
+  distinct()
+```
+
+
+# Bradley 3 data
+
+```{r}
+
+# Tidy Bradley 3 hair shedding data provided by James Henderson
+bradley3_data <-
+  readxl::read_excel(here::here("data/raw_data/henderson_hair_shed.xlsx"), 
+           skip = 1) %>% 
+  # Select all columns but name
+  dplyr::select(
+    animal_id = 1,
+    registration_number = 3, 
+    age = 4,
+    hs19 = 5,
+    hs18 = 6
+    ) %>% 
+  # Change from column for each year to row for each observation
+  reshape2::melt(id = c("animal_id", "registration_number", "age")) %>% 
+  dplyr::mutate(
+    variable = case_when(
+      variable == "hs19" ~ ymd("2019-05-01"),
+      variable == "hs18" ~ ymd("2018-05-08")
+      ),
+    registration_number = as.character(registration_number)) %>% 
+  dplyr::rename(
+    hair_score = value,
+    date_score_recorded = variable
+    ) %>% 
+  dplyr::mutate(
+    farm_id = "bradley3",
+    date_score_recorded = lubridate::ymd(date_score_recorded),
+    year = lubridate::year(date_score_recorded),
+    # Infer age from birth date and date scored
+    age = as.integer(lubridate::time_length(
+      date_score_recorded - lubridate::ymd(age), unit = "years"
+      )),
+    toxic_fescue = "NO",
+    calving_season = "FALL"
+    ) %>% 
+  # Remove empty rows
+  dplyr::filter(!is.na(hair_score)) 
+```
+
+
+# Join & tidy
+
+* Remove animals where sex on file does not match sex in pedigree
+* Remove scores from animals where age on file > 2 year different from age based on DOB in pedigree
+
+```{r}
+angus_join <-
+bind_rows(
+  mu_long %>%
+    mutate(source = "mizzou"),
+  legacy_data %>%
+    mutate(source = "legacy"),
+  bradley3_data %>%
+    mutate(source = "bradley3")
+) %>%
+  # full_reg with BIR or AAA pre-pended
+  mutate(full_reg =
+           case_when(
+             str_detect(registration_number, "^6") ~ as.character(glue("BIR{registration_number}")),
+             str_detect(registration_number, "^1") ~ as.character(glue("AAA{registration_number}"))
+           )) %>%
+  # Use for finding likely errors
+  left_join(hair_ped %>%
+              rename(sex_ped = sex,
+                     dob_ped = dob),
+            by = c("full_reg")) %>%
+  # Pull in missing calving seasons from by-hand ProRodeo searching
+  left_join(read_excel(
+    here::here("data/derived_data/season_search.xlsx"),
+    trim_ws = TRUE,
+    skip = 1,
+    col_names = c("farm_id", "registration_number", "year", "cs2")
+  )) %>%
+  # Fix incorrect calving seasons
+  # For missing calving season, impute using dob
+  mutate(
+    calving_season =
+      case_when(
+        !is.na(cs2) ~ cs2,
+        sex == "F" &
+          is.na(calving_season) &
+          between(lubridate::month(dob_ped), left = 1, right = 6) ~ "SPRING",
+        sex == "F" &
+          is.na(calving_season) &
+          between(lubridate::month(dob_ped), left = 7, right = 12) ~ "FALL",
+        TRUE ~ calving_season
+      ),
+    # Remove spaces from farm ID
+    farm_id = str_remove(farm_id, " "),
+    # Infer age in days using date score recorded
+    age_ped =
+      case_when(
+        !is.na(date_score_recorded) ~ as.integer(date_score_recorded - dob_ped),
+        # If no date scored provided, use May 1 of that year
+        is.na(date_score_recorded) ~ as.integer(ymd(glue::glue("{year}-05-01")) - dob_ped)
+      )
+  ) %>%
+  filter(age_ped >= 274) %>%
+  # Age classes based on BIF age of dam
+  mutate(
+    age_class =
+      case_when(
+        between(age_ped, 274, 639) ~ 1,
+        between(age_ped, 640, 1004) ~ 2,
+        between(age_ped, 1005, 1369) ~ 3,
+        between(age_ped, 1370, 1734) ~ 4,
+        between(age_ped, 1735, 2099) ~ 5,
+        between(age_ped, 2100, 2464) ~ 6,
+        between(age_ped, 2465, 2829) ~ 7,
+        between(age_ped, 2830, 3194) ~ 8,
+        between(age_ped, 3195, 3559) ~ 9,
+        between(age_ped, 3560, 3924) ~ 10,
+        between(age_ped, 3925, 4289) ~ 11,
+        between(age_ped, 4290, 4654) ~ 12,
+        between(age_ped, 4655, 5019) ~ 13,
+        between(age_ped, 5020, 5384) ~ 14,
+        between(age_ped, 5385, 5749) ~ 15,
+        between(age_ped, 5750, 6114) ~ 16,
+        between(age_ped, 6115, 6479) ~ 17,
+        between(age_ped, 6480, 6844) ~ 18,
+        between(age_ped, 6845, 7209) ~ 19,
+        between(age_ped, 7210, 7574) ~ 20,
+        between(age_ped, 7575, 7939) ~ 21
+      ),
+    keep =
+      case_when(
+        # Remove if sex on file differs from sex in pedigree
+        sex != sex_ped ~ "drop sex",
+        # Remove if age on file greater than 2 years different than age in pedigree
+        abs(age - age_class) > 2 ~ "drop age",
+        TRUE ~ "keep"
+        ),
+    age =
+      case_when(
+        is.na(age_class) ~ as.integer(age),
+        TRUE ~ as.integer(age_class)
+      ),
+    sex =
+      case_when(
+        is.na(sex_ped) ~ sex,
+        TRUE ~ sex_ped
+      ),
+  ) %>% 
+  filter(!str_detect(keep, "drop")) %>% 
+  select(
+    farm_id,
+    location,
+    animal_id,
+    full_reg, 
+    registration_number,
+    sex,
+    date_score_recorded,
+    year,
+    hair_score,
+    dob = dob_ped,
+    age,
+    calving_season,
+    toxic_fescue,
+    source, 
+    Lab_ID,
+    barcode
+  ) %>% 
+  # Add coordinates
+  left_join(
+    read_csv(here::here("data/raw_data/an_loc_key.csv"))
+  ) %>% 
+  distinct()
+```
+ 
+# Summary 
+
+  
+* **Result:** `r nrow(angus_join)` scores from `r n_distinct(angus_join$registration_number)` animals 
+
+```{r, message=FALSE}
+angus_join %>% 
+    select(
+    registration_number,
+    sex,
+    date_score_recorded,
+    dob,
+    age,
+    calving_season,
+    toxic_fescue
+  ) %>% 
+  visdat::vis_miss()
+```
+
+* Number of scores per farm
+
+```{r, message=FALSE}
+angus_join %>% 
+  group_by(farm_id) %>% 
+  tally(sort = TRUE)
+```
+
+* Summary by source
+
+```{r, message=FALSE}
+angus_join %>%
+  mutate(source = if_else(source == "bradley3", "legacy", source)) %>%
+  group_by(source) %>%
+  summarise(n = n(),
+            Mean = mean(hair_score),
+            SD = sd(hair_score)) %>%
+  bind_rows(
+    angus_join %>%
+      mutate(source = "All") %>%
+      group_by(source) %>%
+      summarise(
+        n = n(),
+        Mean = mean(hair_score),
+        SD = sd(hair_score)
+      )
+  )
+```
+
+## Score distribution
+
+* Distribution of scores (rounded to nearest whole number) in legacy & Bradley3 data
+
+```{r, message= FALSE}
+angus_join %>% 
+  mutate(source = if_else(source == "bradley3", "legacy", source),
+         hair_score2 = round(hair_score, 0)) %>%
+  filter(source == "legacy") %>% 
+  janitor::tabyl(hair_score2)
+```
+
+* Distribution of scores in Mizzou data
+
+```{r, message=FALSE}
+angus_join %>% 
+  mutate(hair_score2 = round(hair_score, 0)) %>%
+  filter(source == "mizzou") %>% 
+  janitor::tabyl(hair_score2)
+```
+
+```{r, message=FALSE}
+angus_join %>% 
+  mutate(source = if_else(source == "bradley3", "legacy", source)) %>%
+  ggplot(aes(x = hair_score, fill = source)) +
+  geom_density(alpha = 0.3)
+```
+
+## Distribution of scoring timing across all years
+
+```{r, message=FALSE}
+angus_join %>% 
+  mutate(date = ymd(format(angus_join$date_score_recorded, "2000-%m-%d"))) %>% 
+  summarise(min(date, na.rm = TRUE),
+            max(date, na.rm = TRUE))
+```
+
+```{r, message=FALSE}
+angus_join %>% 
+  mutate(date = ymd(format(angus_join$date_score_recorded, "2000-%m-%d"))) %>% 
+  ggplot(aes(x = date)) +
+  geom_density()
+```
+
+## Sex ratio
+
+```{r, message=FALSE}
+angus_join %>% 
+  group_by(sex) %>% 
+  tally()
+```
+
+
+## Location of scores
+
+```{r, message=FALSE}
+source(here::here("source_functions/hair_map.R"))
+
+#cowplot::ggsave2(filename = here::here("figures/figure2.hair_map.pdf"), width = 85, height = 52.4, units = "mm", dpi = 300)
+
+```
+
+## Number of records per animal
+
+```{r, message=FALSE}
+angus_join %>% 
+  group_by(full_reg) %>% 
+  tally(sort = TRUE) %>%
+  ungroup() %>% 
+  group_by(n) %>% 
+  summarise(n_animals = n()) %>% 
+  ungroup() %>% 
+  mutate(percent = scales::percent(n_animals/sum(n_animals)),
+         n_animals = scales::comma(n_animals)) %>% 
+  rename(n_records = n) 
+```
+
+# Export
+
+```{r, eval=FALSE}
+angus_join %>% 
+  write_rds(here::here("data/derived_data/angus_join.rds")) 
+
+```
+
+# Notes and commentary
+
+  Scores recorded on registered & BIR Angus cattle between 2016 and 2019 were extracted from the Mizzou Hair Shedding Project dataset. Records were dropped when the reported sex of an animal did not match the sex recorded in the AAA pedigree or and when the reported age differed from the age calculated using birth date recorded in the AAA pedigree for that registration by more than two years.  
+  When no calving season was reported, it was imputed using the most recent natural birth calving date prior to the recorded score. When no natural birth calving dates were available, calving season was imputed using birth date.  
+  In the AGI legacy project data, some animals were recorded by multiple scoring technicians on the same day. Where relevant, phenotypes recorded on the same animal on the same day were averaged. Fescue grazing status was not recorded in this data, but animals scored in Texas were assumed to not have grazed endophyte-infected fescue in spring of the scoring year.  
+  This resulted in `r angus_join %>% filter(source == "mizzou") %>% n_distinct() %>% scales::comma()` scores recorded on `r angus_join %>% filter(source == "mizzou") %>% select(registration_number) %>% n_distinct(.)  %>% scales::comma()` animals in the Mizzou Hair Shedding Project and `r angus_join %>% filter(source %in% c("legacy", "bradley3")) %>% n_distinct() %>% scales::comma()` scores recorded on `r angus_join %>% filter(source %in% c("legacy", "bradley3")) %>% select(registration_number) %>% n_distinct(.)  %>% scales::comma()` in the AGI legacy project data.  
+  
