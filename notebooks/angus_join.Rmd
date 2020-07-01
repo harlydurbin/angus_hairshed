@@ -29,8 +29,6 @@ library(purrr)
 library(readxl)
 library(tidylog)
 
-source(here::here("source_functions/coalesce_join.R"))
-
 fescue_belt <- 
   read_excel(here::here("data/raw_data/fescue_coordinates.xlsx"))
 
