@@ -1,5 +1,5 @@
 
-#nohup snakemake -s source_functions/general_varcomp.snakefile --latency-wait 30 --jobs 10 --config --keep-going --resources load=100 &> log/snakemake_log/200317.general_varcomp.log &
+#nohup snakemake -s source_functions/general_varcomp.snakefile --latency-wait 30 --jobs 10 --config --keep-going --resources load=100 &> log/snakemake_log/200824.general_varcomp.log &
 
 #export LD_LIBRARY_PATH=/home/agiintern/.conda/envs/regionsenv/lib
 

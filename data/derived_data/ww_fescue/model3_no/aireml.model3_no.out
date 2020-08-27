@@ -1,0 +1,1597 @@
+ * START JOB (AIREMLF90): 08-27-2020  12h 06m 24s 584
+
+renf90.par
+     AI-REMLF90 ver. 1.135
+
+ Parameter file:             renf90.par
+ Data file:                  renf90.dat
+ Number of Traits             2
+ Number of Effects            4
+ Position of Observations      1  2
+ Position of Weight (1)        0
+ Value of Missing Trait/Observation           0
+
+EFFECTS
+ #  type                position (2)        levels   [positions for nested]
+    1  cross-classified       3    4                                             293
+    2  cross-classified       0    5                                           18760
+    3  cross-classified       6    6                                           18760
+    4  cross-classified       6    6                                           18760
+
+ Residual (co)variance Matrix
+ 0.50000     0.10000    
+ 0.10000      1500.0    
+
+ correlated random effects     2  3
+ Type of Random Effect:      additive animal with unknown parent groups and inbreeding
+ Pedigree File:              renadd02.ped                                                                                                                                                                                                                                              
+ trait   effect    (CO)VARIANCES
+  1       2     0.000       0.000       0.000       0.000    
+  2       2     0.000       800.0      0.1000E-01  -200.0    
+  1       3     0.000      0.1000E-01  0.1000      0.1000E-01
+  2       3     0.000      -200.0      0.1000E-01   300.0    
+
+ Random Effect(s)    4
+ Type of Random Effect:      diagonal
+ trait   effect    (CO)VARIANCES
+  1       4    0.1000      0.1000E-01
+  2       4    0.1000E-01   200.0    
+
+ REMARKS
+  (1) Weight position 0 means no weights utilized
+  (2) Effect positions of 0 for some effects and traits means that such
+      effects are missing for specified traits
+ 
+ * convergence criterion (default=1e-12):  1.000000000000000E-012
+ # EM-REML iterations (default=0):          10
+ *** store solutions and s.e. *** se                  
+ * yhat and residual will be shown in yhat_residual
+ * sparse package: YAMS
+* SE for function of (co)variances hmwm G_3_3_1_2/(G_3_3_1_1*G_3_3_2_2)**0.5
+* SE for function of (co)variances wmwd G_2_3_2_2/(G_2_2_2_2*G_3_3_2_2)**0.5
+* SE for function of (co)variances wdhm G_2_3_2_1/(G_2_2_2_2*G_3_3_1_1)**0.5
+ *** number of samples to calculate SE for function of (co)variances*** 
+     1000000
+ 
+
+Options read from parameter file:
+
+ * SNP file: genotypes.txt
+ * SNP Xref file: genotypes.txt_XrefID
+ * Map file: ../../chrinfo.imputed_hair.txt
+ * Use only SNP with allele freq > minfreq (default minfreq = 0.05):   0.00
+ * Sex Chromosome (default 0)  30
+ * use YAMS package for sparse computation (default=.false.)
+ Data record length =            6
+ # free parameters=          12
+ # parameters=          17
+ # random effects=           3
+ # elements for random effects=           9
+ # maximum (ntrait*random)**2=          16
+ # (co)variance matrices=           2
+hash matrix increased from            8192 to           16384 % filled:     0.8000
+hash matrix increased from           16384 to           32768 % filled:     0.8000
+hash matrix increased from           32768 to           65536 % filled:     0.8000
+hash matrix increased from           65536 to          131072 % filled:     0.8000
+hash matrix increased from          131072 to          262144 % filled:     0.8000
+hash matrix increased from          262144 to          524288 % filled:     0.8000
+ read        11658  records in   0.6927460      s,                  214410 
+  nonzeroes
+hash matrix increased from            8192 to           16384 % filled:     0.8000
+hash matrix increased from           16384 to           32768 % filled:     0.8000
+hash matrix increased from           32768 to           65536 % filled:     0.8000
+hash matrix increased from          524288 to         1048576 % filled:     0.8000
+hash matrix increased from           65536 to          131072 % filled:     0.8000
+  read        18760  additive pedigrees
+ 
+ *--------------------------------------------------------------*
+ *                 Genomic Library: Dist Version 1.239          *
+ *                                                              *
+ *             Optimized OpenMP Version - 72 threads            *
+ *                                                              *
+ *  Modified relationship matrix (H) created for effect:   2    *
+ *--------------------------------------------------------------*
+ 
+ Read 18760 animals from pedigree file: "renadd02.ped"
+ Number of Genotyped Animals: 1979
+
+ Creating A22 
+    Extracting subset of: 3933 pedigrees from: 18760 elapsed time:     0.0395
+    Calculating A22 Matrix by Colleau OpenMP...elapsed time: .0199
+    Numbers of threads=36 72
+
+ Reading SNP file
+    Column position in file for the first marker: 22
+    Format to read SNP file: (21x,400000i1)                                    
+    Number of SNPs: 233246
+    Format: integer genotypes (0 to 5) to double-precision array
+    Number of Genotyped animals: 1979
+    Reading SNP file elapsed time: 22.35
+ 
+ Statistics of alleles frequencies in the current population
+    N:         233246
+    Mean:       0.495
+    Min:        0.000
+    Max:        1.000
+    Var:        0.161
+
+ Reading MAP file: "../../chrinfo.imputed_hair.txt" - 233246 SNPs out of 233246
+
+    Min and max # of chromosome: 1 29
+
+    Min and max # of SNP: 1 233246
+ 
+ Quality Control - SNPs with Call Rate < callrate ( 0.90) will removed: 0
+ 
+ Quality Control - SNPs with MAF < minfreq ( 0.00) will removed: 70495
+ 
+ Quality Control - Monomorphic SNPs will be removed: 70495
+
+ Quality Control - Removed Animals with Call rate < callrate ( 0.90): 0
+
+ Quality Control - Check Parent-Progeny Mendelian conflicts
+
+    Total animals: 18760 - Genotyped animals: 1979 - Effective: 1979
+
+    Number of pairs Individual - Sire: 91
+    Number of pairs Individual - Dam: 830
+    Number of trios Individual - Sire - Dam: 39
+
+    SNPs from sex chr were MASKED for checks on Parentage conflicts or HWE: 0
+    SNPs from sex chr with no flags: 0
+
+ Checking SNPs for Mendelian conflicts
+
+    Total number of effective SNP: 162751
+    Total number of parent-progeny evaluations: 921
+    Number of SNPs with Mendelian conflicts: 0
+
+ Checking Animals for Mendelian conflicts
+
+    Total number of effective SNP for checks on Animals: 162751
+
+    Number of Parent-Progeny Mendelian Conflicts: 10
+    Output stored in "Gen_conflicts"
+  
+    ****************************************************************
+    **      ALL PROGENY with conflicts will be removed !!!!       **
+    **                                                            **
+    **     Use seekparentf90 program to correct conflicts !!      **
+    ****************************************************************
+
+    SNPs from sex chr were UNMASKED for checks on Parentage conflicts or HWE: 0
+    SNPs from sex chr with no flags: 0
+
+ Number of effective SNPs (after QC): 162751
+
+ Number of effective Indiviuals (after QC): 1969
+ 
+ Statistics of alleles frequencies in the current population after
+ Quality Control (MAF, monomorphic, call rate, HWE, Mendelian conflicts)
+    N:         162751
+    Mean:       0.527
+    Min:        0.000
+    Max:        1.000
+    Var:        0.122
+
+ Number of Animals to be excluded from analysis: 70495
+
+    For calulations in the current analysis number
+    of genotyped animals are the same but:
+
+       Diagonals of G and A22 are set to 1
+       Off-Diagonals of G and A22 are set to 0
+
+ List of Animals removed in: "genotypes.txt_Animals_removed"
+
+ List of SNPs removed in: "genotypes.txt_SNPs_removed"
+
+ Clean genotype file was created: "genotypes.txt_clean"
+
+ Cross reference ID file was created: "genotypes.txt_clean_XrefID"
+
+ Genotypes missings (%): 30.223
+
+ Genotypes missings after cleannig (%):  0.000
+
+ Calculating G Matrix 
+    Dgemm MKL #threads=    36   72 Elapsed omp_get_time:     5.4205
+ 
+ Scale by Sum(2pq). Average:   41403.1873140707     
+
+ Detecting samples with similar genotypes
+    elapsed time=     0.0
+ 
+ Blend G as alpha*G + beta*A22: (alpha,beta)     0.950     0.050
+
+ Frequency - Diagonal of G
+    N:        1969
+    Mean:        1.005
+    Min:         0.783
+    Max:         1.249
+    Range:       0.023
+    Class:     20
+ 
+  #Class       Class   Count
+       1  0.7829           1
+       2  0.8062           1
+       3  0.8295           0
+       4  0.8529           1
+       5  0.8762           2
+       6  0.8995           5
+       7  0.9228          68
+       8  0.9461         245
+       9  0.9694         499
+      10  0.9927         478
+      11   1.016         337
+      12   1.039         178
+      13   1.063          70
+      14   1.086          48
+      15   1.109          14
+      16   1.133          12
+      17   1.156           3
+      18   1.179           4
+      19   1.203           1
+      20   1.226           2
+      21   1.249           0
+ 
+
+ Check for diagonal of genomic relationship matrix
+
+
+ Check for diagonal of genomic relationship matrix, genotypes not removed: 0
+
+ ------------------------------
+  Final Pedigree-Based Matrix 
+ ------------------------------
+ 
+ Statistic of Rel. Matrix A22
+                            N      Mean       Min       Max       Var
+     Diagonal            1979     1.005     1.000     1.250     0.000
+     Off-diagonal     3914462     0.010     0.000     0.750     0.001
+ 
+
+ ----------------------
+  Final Genomic Matrix 
+ ----------------------
+ 
+ Statistic of Genomic Matrix
+                            N      Mean       Min       Max       Var
+     Diagonal            1979     1.005     0.783     1.249     0.002
+     Off-diagonal     3914462     0.010    -0.115     0.703     0.002
+ 
+
+ Correlation of Genomic Inbreeding and Pedigree Inbreeding
+     Correlation:     0.3881
+ 
+ All elements - Diagonal / Off-Diagonal
+    Estimating Regression Coefficients G = b0 11' + b1 A + e
+    Regression coefficients b0 b1 =      0.000     0.945
+
+    Correlation all elements G & A     0.802
+ 
+ Off-Diagonal
+    Using 433882 elements from A22 >= .02000
+
+    Estimating Regression Coefficients G = b0 11' + b1 A + e
+    Regression coefficients b0 b1 =     -0.004     0.957
+
+    Correlation Off-Diagonal elements G & A     0.866
+ 
+
+ Creating A22-inverse 
+    Inverse LAPACK MKL dpotrf/i  #threads=   36   72 Elapsed omp_get_time:     0.3165
+
+ ----------------------
+  Final A22 Inv Matrix 
+ ----------------------
+ 
+ Statistic of Inv. Rel. Matrix A22
+                            N      Mean       Min       Max       Var
+     Diagonal            1979     1.749     1.000    13.611     0.329
+     Off-diagonal     3914462    -0.001    -1.123     1.000     0.000
+ 
+ 
+ Creating G-inverse 
+    Inverse LAPACK MKL dpotrf/i  #threads=   36   72 Elapsed omp_get_time:     0.0787
+
+ --------------------------
+  Final Genomic Inv Matrix 
+ --------------------------
+ 
+ Statistic of Inv. Genomic Matrix
+                            N      Mean       Min       Max       Var
+     Diagonal            1979     2.997     1.000    22.588     0.887
+     Off-diagonal     3914462    -0.001    -2.216     1.676     0.003
+ 
+
+ Check for diagonal of Inverse Genomic - Inverse of pedigree relationship matrix
+
+ Number of genotypes with G^ii < A22^ii: 3
+ Genotype number, renumber id and Gi-A22i print in file: "Check_Diagonal_GimA22i"
+
+ ------------------------------
+  Final G Inv - A22 Inv Matrix 
+ ------------------------------
+ 
+ Statistic of Inv. Genomic- A22 Matrix
+                            N      Mean       Min       Max       Var
+     Diagonal            1979     1.248    -0.145     8.977     0.181
+     Off-diagonal     3914462    -0.001    -1.236     0.676     0.002
+ 
+
+*--------------------------------------------------*
+* Setup Genomic Done !!!, elapsed time:     58.180 *
+*--------------------------------------------------*
+
+ wGimA22i   1.00000000000000     
+hash matrix increased from          131072 to          262144 % filled:     0.8000
+hash matrix increased from          262144 to          524288 % filled:     0.8000
+hash matrix increased from          524288 to         1048576 % filled:     0.8000
+hash matrix increased from         1048576 to         2097152 % filled:     0.8000
+hash matrix increased from         2097152 to         4194304 % filled:     0.8000
+hash matrix increased from         1048576 to         2097152 % filled:     0.8000
+hash matrix increased from         2097152 to         4194304 % filled:     0.8000
+hash matrix increased from         4194304 to         8388608 % filled:     0.8000
+hash matrix increased from         8388608 to        16777216 % filled:     0.8000
+hash matrix increased from        16777216 to        33554432 % filled:     0.8000
+hash matrix increased from            8192 to           16384 % filled:     0.8000
+hash matrix increased from           16384 to           32768 % filled:     0.8000
+ finished peds in    327.9411      s,                18310548  nonzeroes
+ rank=       94196
+
+ YAMS: Yet Another MME Solver  Version 1.1.5           
+--------------------------------------------------------------
+ Original MME:
+   No. of Equations                =        113146
+   No. of Nonzeros                 =      18329498
+   IA byte type                    =             4
+   Ordering Method                 =           AMD
+   Factor Type                     =           LDL
+   Algorithm for Factorization     =         SN LL
+   Algorithm for Inversion         =         INVMF
+ Supernodes (SNs):
+   No. of SNs.                     =         64632
+   No. of Cols. in the Last SN.    =          6253
+   Frequent No. of Cols.           =             1
+   Its Count                       =         29513
+   Its Ratio (%)                   =      45.66314
+   Threshold of Split              =    2147483647
+ Factor (L):
+   User-defined Constraint         =             0
+   Rank                            =         94196
+   No. of Constraints              =         18950
+   Panel Size                      =           256
+   Tolerances for Kachman mod.     =     1.000E-10     1.000E-10
+   Detection of Panel Size (1:YES) =             0
+ Memory:
+   No. of Effective Entries in L   =      22524538
+   No. of Allocated Entries in L   =      24343174
+   Storage for L              (MB) =         185.7
+   Storage for Integer Arrays (MB) =           4.4
+   Temp. Mem. for FACT.       (MB) =           5.1
+   Temp. Mem. for INV.        (MB) =         298.9
+ CPU & System Time in the last call:
+   Ordering                  (sec) =          16.3           2.8
+   Symbolic Fact.            (sec) =           2.4           2.4
+   Numerical Fact.           (sec) =          54.6           4.9
+   Sparse Inversion          (sec) =         175.6           5.9
+   Solution                  (sec) =           5.6           0.1
+
+ -2logL =    68752.8899461586       : AIC =    68776.8899461586     
+  In round            1  convergence=  1.238844433402446E-003
+ round            1
+ new r
+  0.58701     -0.24397    
+ -0.24397       1842.4    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       832.27      0.11115E-01  -205.15    
+   0.0000      0.11115E-01  0.10085      0.10228E-03
+   0.0000      -205.15      0.10228E-03   304.74    
+ new G
+  0.10031      0.60648E-02
+  0.60648E-02   203.44    
+ * START iteration: 08-27-2020  12h 08m 03s 197
+ -2logL =    68295.6014780937       : AIC =    68319.6014780937     
+  In round            2  convergence=  2.772335658552379E-004
+ round            2
+ new r
+  0.62027     -0.51467    
+ -0.51467       2044.9    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       847.84      0.12086E-01  -207.07    
+   0.0000      0.12086E-01  0.10142     -0.82312E-02
+   0.0000      -207.07     -0.82312E-02   307.36    
+ new G
+  0.10033      0.31651E-02
+  0.31651E-02   205.47    
+ -2logL =    68193.3533713118       : AIC =    68217.3533713118     
+  In round            3  convergence=  8.157468374039548E-005
+ round            3
+ new r
+  0.63170     -0.68407    
+ -0.68407       2149.8    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       856.35      0.13020E-01  -207.68    
+   0.0000      0.13020E-01  0.10190     -0.15920E-01
+   0.0000      -207.68     -0.15920E-01   309.11    
+ new G
+  0.10025      0.70804E-03
+  0.70804E-03   206.91    
+ -2logL =    68169.5406253172       : AIC =    68193.5406253172     
+  In round            4  convergence=  3.340247474656266E-005
+ round            4
+ new r
+  0.63541     -0.78036    
+ -0.78036       2199.8    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       861.74      0.13947E-01  -207.72    
+   0.0000      0.13947E-01  0.10236     -0.23348E-01
+   0.0000      -207.72     -0.23348E-01   310.47    
+ new G
+  0.10016     -0.15406E-02
+ -0.15406E-02   208.09    
+ -2logL =    68162.9450808074       : AIC =    68186.9450808074     
+  In round            5  convergence=  1.898290386515498E-005
+ round            5
+ new r
+  0.63649     -0.83202    
+ -0.83202       2221.8    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       865.73      0.14873E-01  -207.52    
+   0.0000      0.14873E-01  0.10280     -0.30683E-01
+   0.0000      -207.52     -0.30683E-01   311.66    
+ new G
+  0.10005     -0.36837E-02
+ -0.36837E-02   209.15    
+ -2logL =    68160.1117061234       : AIC =    68184.1117061234     
+  In round            6  convergence=  1.385353301137713E-005
+ round            6
+ new r
+  0.63671     -0.85783    
+ -0.85783       2230.3    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       869.07      0.15796E-01  -207.20    
+   0.0000      0.15796E-01  0.10325     -0.38004E-01
+   0.0000      -207.20     -0.38004E-01   312.77    
+ new G
+  0.99937E-01 -0.57705E-02
+ -0.57705E-02   210.15    
+ -2logL =    68158.1060625301       : AIC =    68182.1060625301     
+  In round            7  convergence=  1.177415037668832E-005
+ round            7
+ new r
+  0.63663     -0.86891    
+ -0.86891       2232.3    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       872.11      0.16713E-01  -206.82    
+   0.0000      0.16713E-01  0.10369     -0.45348E-01
+   0.0000      -206.82     -0.45348E-01   313.85    
+ new G
+  0.99824E-01 -0.78262E-02
+ -0.78262E-02   211.13    
+ -2logL =    68156.2894601464       : AIC =    68180.2894601464     
+  In round            8  convergence=  1.084994886324226E-005
+ round            8
+ new r
+  0.63646     -0.87161    
+ -0.87161       2231.4    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       875.01      0.17619E-01  -206.41    
+   0.0000      0.17619E-01  0.10414     -0.52734E-01
+   0.0000      -206.41     -0.52734E-01   314.91    
+ new G
+  0.99711E-01 -0.98641E-02
+ -0.98641E-02   212.10    
+ -2logL =    68154.5225940054       : AIC =    68178.5225940054     
+  In round            9  convergence=  1.040746890150011E-005
+ min,max changes:   0.897505561543736        1.19038609291006     
+ round            9
+ new r
+  0.63627     -0.86954    
+ -0.86954       2229.0    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       877.84      0.18512E-01  -205.99    
+   0.0000      0.18512E-01  0.10458     -0.60170E-01
+   0.0000      -205.99     -0.60170E-01   315.97    
+ new G
+  0.99597E-01 -0.11891E-01
+ -0.11891E-01   213.07    
+ -2logL =    68152.7749859850       : AIC =    68176.7749859850     
+  In round           10  convergence=  1.017736384027662E-005
+ round           10
+ new r
+  0.63606     -0.86474    
+ -0.86474       2226.0    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       880.64      0.19392E-01  -205.55    
+   0.0000      0.19392E-01  0.10503     -0.67663E-01
+   0.0000      -205.55     -0.67663E-01   317.02    
+ new G
+  0.99483E-01 -0.13912E-01
+ -0.13912E-01   214.03    
+ -2logL =    68151.0399865254       : AIC =    68175.0399865254     
+  In round           11  convergence=  2.677555987461934E-003
+  delta convergence=   12.1284504054977     
+ new R
+  0.63340     -0.77635    
+ -0.77635       2170.4    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       927.91      0.43984E-01  -198.79    
+   0.0000      0.43984E-01  0.11335     -0.20542    
+   0.0000      -198.79     -0.20542       335.50    
+ new G
+  0.96950E-01 -0.49606E-01
+ -0.49606E-01   231.19    
+ -2logL =    68122.8454520578       : AIC =    68146.8454520578     
+  In round           12  convergence=  2.359295984888885E-003
+  delta convergence=   12.2865353385120     
+ new R
+  0.63001     -0.65717    
+ -0.65717       2112.7    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       973.53      0.67425E-01  -190.93    
+   0.0000      0.67425E-01  0.12202     -0.36085    
+   0.0000      -190.93     -0.36085       354.10    
+ new G
+  0.94292E-01 -0.83358E-01
+ -0.83358E-01   248.47    
+ -2logL =    68098.1062968552       : AIC =    68122.1062968552     
+  In round           13  convergence=  2.059040556534650E-003
+  delta convergence=   11.9112065364382     
+ new R
+  0.62662     -0.53102    
+ -0.53102       2058.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1017.3      0.91643E-01  -182.51    
+   0.0000      0.91643E-01  0.13103     -0.53319    
+   0.0000      -182.51     -0.53319       372.65    
+ new G
+  0.91511E-01 -0.11458    
+ -0.11458       265.67    
+ -2logL =    68076.8707702088       : AIC =    68100.8707702088     
+  In round           14  convergence=  1.753003359378990E-003
+  delta convergence=   11.3320733204707     
+ new R
+  0.62335     -0.40735    
+ -0.40735       2007.5    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1058.8      0.11945      -174.09    
+   0.0000      0.11945      0.14036     -0.72063    
+   0.0000      -174.09     -0.72063       390.89    
+ new G
+  0.88609E-01 -0.14257    
+ -0.14257       282.54    
+ -2logL =    68059.0690707041       : AIC =    68083.0690707041     
+  In round           15  convergence=  1.445097032085322E-003
+  delta convergence=   10.5647761237276     
+ new R
+  0.62025     -0.29089    
+ -0.29089       1961.4    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1097.4      0.15431      -166.24    
+   0.0000      0.15431      0.14992     -0.92013    
+   0.0000      -166.24     -0.92013       408.47    
+ new G
+  0.85590E-01 -0.16663    
+ -0.16663       298.80    
+ -2logL =    68044.5063357861       : AIC =    68068.5063357861     
+  In round           16  convergence=  1.148295070621105E-003
+  delta convergence=   9.62791453512776     
+ new R
+  0.61734     -0.18446    
+ -0.18446       1920.3    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1132.8      0.19989      -159.53    
+   0.0000      0.19989      0.15960      -1.1276    
+   0.0000      -159.53      -1.1276       425.05    
+ new G
+  0.82467E-01 -0.18619    
+ -0.18619       314.15    
+ -2logL =    68032.8675563741       : AIC =    68056.8675563741     
+  In round           17  convergence=  8.789836078717560E-004
+  delta convergence=   8.56347802506909     
+ new R
+  0.61467     -0.89876E-01
+ -0.89876E-01   1884.3    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1164.6      0.25946      -154.43    
+   0.0000      0.25946      0.16925      -1.3379    
+   0.0000      -154.43      -1.3379       440.28    
+ new G
+  0.79258E-01 -0.20090    
+ -0.20090       328.38    
+ -2logL =    68023.7453256885       : AIC =    68047.7453256885     
+  In round           18  convergence=  6.511213618386514E-004
+  delta convergence=   7.43161602867422     
+ new R
+  0.61228     -0.81599E-02
+ -0.81599E-02   1853.5    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1192.8      0.33526      -151.24    
+   0.0000      0.33526      0.17869      -1.5459    
+   0.0000      -151.24      -1.5459       453.91    
+ new G
+  0.75987E-01 -0.21070    
+ -0.21070       341.32    
+ -2logL =    68016.6863630632       : AIC =    68040.6863630632     
+  In round           19  convergence=  4.719188018943100E-004
+  delta convergence=   6.29923169802583     
+ new R
+  0.61020      0.60413E-01
+  0.60413E-01   1827.4    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1217.4      0.42794      -150.09    
+   0.0000      0.42794      0.18774      -1.7464    
+   0.0000      -150.09      -1.7464       465.80    
+ new G
+  0.72683E-01 -0.21584    
+ -0.21584       352.88    
+ -2logL =    68011.2426188406       : AIC =    68035.2426188406     
+  In round           20  convergence=  3.406194394874916E-004
+  delta convergence=   5.36977342404464     
+ new R
+  0.60845      0.11625    
+  0.11625       1805.8    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1238.7      0.53636      -150.95    
+   0.0000      0.53636      0.19623      -1.9354    
+   0.0000      -150.95      -1.9354       475.90    
+ new G
+  0.69377E-01 -0.21680    
+ -0.21680       363.07    
+ -2logL =    68007.0127484361       : AIC =    68031.0127484361     
+  In round           21  convergence=  2.502425786442862E-004
+  delta convergence=   4.70475029983048     
+ new R
+  0.60704      0.16035    
+  0.16035       1788.0    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1257.0      0.65773      -153.60    
+   0.0000      0.65773      0.20403      -2.1096    
+   0.0000      -153.60      -2.1096       484.30    
+ new G
+  0.66099E-01 -0.21422    
+ -0.21422       371.97    
+ -2logL =    68003.6660572840       : AIC =    68027.6660572840     
+  In round           22  convergence=  1.908002997272164E-004
+  delta convergence=   4.12312877263147     
+ new R
+  0.60597      0.19412    
+  0.19412       1773.4    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1272.8      0.78804      -157.74    
+   0.0000      0.78804      0.21104      -2.2674    
+   0.0000      -157.74      -2.2674       491.15    
+ new G
+  0.62877E-01 -0.20882    
+ -0.20882       379.71    
+ -2logL =    68000.9487153192       : AIC =    68024.9487153192     
+  In round           23  convergence=  1.523144833128836E-004
+  delta convergence=   3.62473508264660     
+ new R
+  0.60520      0.21922    
+  0.21922       1761.5    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1286.6      0.92266      -163.03    
+   0.0000      0.92266      0.21723      -2.4082    
+   0.0000      -163.03      -2.4082       496.65    
+ new G
+  0.59734E-01 -0.20132    
+ -0.20132       386.43    
+ -2logL =    67998.6771351451       : AIC =    68022.6771351451     
+  In round           24  convergence=  1.266721121749573E-004
+  delta convergence=   3.20243776651408     
+ new R
+  0.60471      0.23738    
+  0.23738       1751.7    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1298.6       1.0570      -169.13    
+   0.0000       1.0570      0.22261      -2.5325    
+   0.0000      -169.13      -2.5325       501.04    
+ new G
+  0.56690E-01 -0.19235    
+ -0.19235       392.31    
+ -2logL =    67996.7247728098       : AIC =    68020.7247728098     
+  In round           25  convergence=  1.082245943074402E-004
+  delta convergence=   2.84515982064098     
+ new R
+  0.60447      0.25024    
+  0.25024       1743.6    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1309.2       1.1869      -175.69    
+   0.0000       1.1869      0.22723      -2.6413    
+   0.0000      -175.69      -2.6413       504.50    
+ new G
+  0.53759E-01 -0.18243    
+ -0.18243       397.49    
+ -2logL =    67995.0074592931       : AIC =    68019.0074592931     
+  In round           26  convergence=  9.354263369018483E-005
+  delta convergence=   2.54060151017726     
+ new R
+  0.60442      0.25923    
+  0.25923       1736.9    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1318.5       1.3092      -182.46    
+   0.0000       1.3092      0.23118      -2.7361    
+   0.0000      -182.46      -2.7361       507.23    
+ new G
+  0.50951E-01 -0.17199    
+ -0.17199       402.10    
+ -2logL =    67993.4703272603       : AIC =    68017.4703272603     
+  In round           27  convergence=  8.081893835649133E-005
+  delta convergence=   2.27716816686876     
+ new R
+  0.60453      0.26553    
+  0.26553       1731.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1326.9       1.4214      -189.21    
+   0.0000       1.4214      0.23455      -2.8186    
+   0.0000      -189.21      -2.8186       509.38    
+ new G
+  0.48269E-01 -0.16133    
+ -0.16133       406.25    
+ -2logL =    67992.0776061914       : AIC =    68016.0776061914     
+  In round           28  convergence=  6.925924456479436E-005
+  delta convergence=   2.04499461555897     
+ new R
+  0.60476      0.27004    
+  0.27004       1726.2    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1334.3       1.5222      -195.77    
+   0.0000       1.5222      0.23744      -2.8902    
+   0.0000      -195.77      -2.8902       511.07    
+ new G
+  0.45716E-01 -0.15067    
+ -0.15067       410.02    
+ -2logL =    67990.8053936116       : AIC =    68014.8053936116     
+  In round           29  convergence=  5.861445211933796E-005
+  delta convergence=   1.83640610778054     
+ new R
+  0.60507      0.27340    
+  0.27340       1722.0    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1340.9       1.6108      -202.01    
+   0.0000       1.6108      0.23994      -2.9523    
+   0.0000      -202.01      -2.9523       512.40    
+ new G
+  0.43290E-01 -0.14017    
+ -0.14017       413.46    
+ -2logL =    67989.6369218498       : AIC =    68013.6369218498     
+  In round           30  convergence=  4.887858639733705E-005
+  delta convergence=   1.64588451795032     
+ new R
+  0.60544      0.27606    
+  0.27606       1718.3    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1346.8       1.6872      -207.86    
+   0.0000       1.6872      0.24212      -3.0061    
+   0.0000      -207.86      -3.0061       513.42    
+ new G
+  0.40988E-01 -0.12991    
+ -0.12991       416.62    
+ -2logL =    67988.5596642762       : AIC =    68012.5596642762     
+  In round           31  convergence=  4.011944829550638E-005
+  delta convergence=   1.46977666838133     
+ new R
+  0.60585      0.27827    
+  0.27827       1715.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1352.1       1.7518      -213.25    
+   0.0000       1.7518      0.24406      -3.0525    
+   0.0000      -213.25      -3.0525       514.20    
+ new G
+  0.38806E-01 -0.11996    
+ -0.11996       419.53    
+ -2logL =    67987.5636682445       : AIC =    68011.5636682445     
+  In round           32  convergence=  3.239680885969908E-005
+  delta convergence=   1.30590083634788     
+ new R
+  0.60627      0.28018    
+  0.28018       1712.4    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1356.7       1.8054      -218.16    
+   0.0000       1.8054      0.24581      -3.0925    
+   0.0000      -218.16      -3.0925       514.78    
+ new G
+  0.36738E-01 -0.11036    
+ -0.11036       422.20    
+ -2logL =    67986.6406404012       : AIC =    68010.6406404012     
+  In round           33  convergence=  2.573112992498381E-005
+  delta convergence=   1.15313713609773     
+ new R
+  0.60669      0.28188    
+  0.28188       1709.9    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1360.7       1.8489      -222.58    
+   0.0000       1.8489      0.24739      -3.1268    
+   0.0000      -222.58      -3.1268       515.18    
+ new G
+  0.34778E-01 -0.10114    
+ -0.10114       424.64    
+ -2logL =    67985.7834571608       : AIC =    68009.7834571608     
+  In round           34  convergence=  2.009828817769351E-005
+  delta convergence=   1.01105624059063     
+ new R
+  0.60711      0.28337    
+  0.28337       1707.8    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1364.3       1.8835      -226.52    
+   0.0000       1.8835      0.24886      -3.1559    
+   0.0000      -226.52      -3.1559       515.43    
+ new G
+  0.32922E-01 -0.92306E-01
+ -0.92306E-01   426.87    
+ -2logL =    67984.9858985354       : AIC =    68008.9858985354     
+  In round           35  convergence=  1.543606014377662E-005
+  delta convergence=  0.879613553166877     
+ new R
+  0.60753      0.28467    
+  0.28467       1706.0    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1367.3       1.9103      -229.98    
+   0.0000       1.9103      0.25021      -3.1805    
+   0.0000      -229.98      -3.1805       515.56    
+ new G
+  0.31163E-01 -0.83875E-01
+ -0.83875E-01   428.88    
+ -2logL =    67984.2424923449       : AIC =    68008.2424923449     
+  In round           36  convergence=  1.165482070673500E-005
+  delta convergence=  0.758917741491688     
+ new R
+  0.60793      0.28578    
+  0.28578       1704.4    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1370.0       1.9304      -232.99    
+   0.0000       1.9304      0.25148      -3.2012    
+   0.0000      -232.99      -3.2012       515.59    
+ new G
+  0.29496E-01 -0.75855E-01
+ -0.75855E-01   430.69    
+ -2logL =    67983.5484094746       : AIC =    68007.5484094746     
+  In round           37  convergence=  8.648712134636231E-006
+  delta convergence=  0.657990315716305     
+ new R
+  0.60832      0.28669    
+  0.28669       1703.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1372.2       1.9449      -235.58    
+   0.0000       1.9449      0.25267      -3.2185    
+   0.0000      -235.58      -3.2185       515.53    
+ new G
+  0.27916E-01 -0.68250E-01
+ -0.68250E-01   432.30    
+ -2logL =    67982.8993814285       : AIC =    68006.8993814285     
+  In round           38  convergence=  6.305533417246104E-006
+  delta convergence=  0.569294198873656     
+ new R
+  0.60869      0.28743    
+  0.28743       1702.0    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1374.2       1.9549      -237.79    
+   0.0000       1.9549      0.25379      -3.2328    
+   0.0000      -237.79      -3.2328       515.42    
+ new G
+  0.26417E-01 -0.61061E-01
+ -0.61061E-01   433.72    
+ -2logL =    67982.2916302861       : AIC =    68006.2916302861     
+  In round           39  convergence=  4.514619887559252E-006
+  delta convergence=  0.488351390022792     
+ new R
+  0.60904      0.28799    
+  0.28799       1701.0    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1375.8       1.9613      -239.66    
+   0.0000       1.9613      0.25485      -3.2448    
+   0.0000      -239.66      -3.2448       515.26    
+ new G
+  0.24997E-01 -0.54287E-01
+ -0.54287E-01   434.96    
+ -2logL =    67981.7218073438       : AIC =    68005.7218073438     
+  In round           40  convergence=  3.172526674641412E-006
+  delta convergence=  0.415150396045966     
+ new R
+  0.60939      0.28840    
+  0.28840       1700.2    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1377.1       1.9650      -241.21    
+   0.0000       1.9650      0.25586      -3.2547    
+   0.0000      -241.21      -3.2547       515.07    
+ new G
+  0.23649E-01 -0.47924E-01
+ -0.47924E-01   436.04    
+ -2logL =    67981.1869357203       : AIC =    68005.1869357203     
+  In round           41  convergence=  2.186640209870708E-006
+  delta convergence=  0.349571508222934     
+ new R
+  0.60971      0.28868    
+  0.28868       1699.6    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1378.2       1.9666      -242.49    
+   0.0000       1.9666      0.25680      -3.2629    
+   0.0000      -242.49      -3.2629       514.87    
+ new G
+  0.22370E-01 -0.41963E-01
+ -0.41963E-01   436.96    
+ -2logL =    67980.6843605378       : AIC =    68004.6843605378     
+  In round           42  convergence=  1.477018558485823E-006
+  delta convergence=  0.291397806077360     
+ new R
+  0.61002      0.28886    
+  0.28886       1699.0    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1379.1       1.9669      -243.53    
+   0.0000       1.9669      0.25770      -3.2699    
+   0.0000      -243.53      -3.2699       514.66    
+ new G
+  0.21157E-01 -0.36393E-01
+ -0.36393E-01   437.74    
+ -2logL =    67980.2117078211       : AIC =    68004.2117078211     
+  In round           43  convergence=  9.768439445575902E-007
+  delta convergence=  0.240441975332912     
+ new R
+  0.61032      0.28896    
+  0.28896       1698.6    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1379.9       1.9662      -244.37    
+   0.0000       1.9662      0.25855      -3.2759    
+   0.0000      -244.37      -3.2759       514.46    
+ new G
+  0.20005E-01 -0.31202E-01
+ -0.31202E-01   438.39    
+ -2logL =    67979.7668459422       : AIC =    68003.7668459422     
+  In round           44  convergence=  6.318828208280646E-007
+  delta convergence=  0.196188543547190     
+ new R
+  0.61061      0.28901    
+  0.28901       1698.2    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1380.5       1.9649      -245.04    
+   0.0000       1.9649      0.25936      -3.2812    
+   0.0000      -245.04      -3.2812       514.27    
+ new G
+  0.18912E-01 -0.26374E-01
+ -0.26374E-01   438.92    
+ -2logL =    67979.3478508425       : AIC =    68003.3478508425     
+  In round           45  convergence=  3.993123928491717E-007
+  delta convergence=  0.158175903199282     
+ new R
+  0.61088      0.28902    
+  0.28902       1698.0    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1381.0       1.9635      -245.57    
+   0.0000       1.9635      0.26013      -3.2858    
+   0.0000      -245.57      -3.2858       514.10    
+ new G
+  0.17874E-01 -0.21891E-01
+ -0.21891E-01   439.36    
+ -2logL =    67978.9529821439       : AIC =    68002.9529821439     
+  In round           46  convergence=  2.462083924052980E-007
+  delta convergence=  0.125931452454662     
+ new R
+  0.61114      0.28901    
+  0.28901       1697.7    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1381.3       1.9619      -245.97    
+   0.0000       1.9619      0.26085      -3.2900    
+   0.0000      -245.97      -3.2900       513.95    
+ new G
+  0.16889E-01 -0.17736E-01
+ -0.17736E-01   439.71    
+ -2logL =    67978.5806576856       : AIC =    68002.5806576856     
+  In round           47  convergence=  1.479165888101570E-007
+  delta convergence=  9.893955181704513E-002
+ new R
+  0.61139      0.28900    
+  0.28900       1697.6    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1381.6       1.9604      -246.28    
+   0.0000       1.9604      0.26154      -3.2939    
+   0.0000      -246.28      -3.2939       513.82    
+ new G
+  0.15953E-01 -0.13889E-01
+ -0.13889E-01   439.99    
+ -2logL =    67978.2294335835       : AIC =    68002.2294335835     
+  In round           48  convergence=  8.646299945352114E-008
+  delta convergence=  7.665916064787483E-002
+ new R
+  0.61163      0.28898    
+  0.28898       1697.4    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1381.8       1.9591      -246.51    
+   0.0000       1.9591      0.26219      -3.2975    
+   0.0000      -246.51      -3.2975       513.71    
+ new G
+  0.15065E-01 -0.10332E-01
+ -0.10332E-01   440.21    
+ -2logL =    67977.8979872536       : AIC =    68001.8979872536     
+  In round           49  convergence=  4.910040685011862E-008
+  delta convergence=  5.853935930520470E-002
+ new R
+  0.61186      0.28897    
+  0.28897       1697.3    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.0       1.9580      -246.68    
+   0.0000       1.9580      0.26281      -3.3009    
+   0.0000      -246.68      -3.3009       513.62    
+ new G
+  0.14222E-01 -0.70453E-02
+ -0.70453E-02   440.38    
+ -2logL =    67977.5851046404       : AIC =    68001.5851046404     
+  In round           50  convergence=  2.704495739513992E-008
+  delta convergence=  4.403274550118249E-002
+ new R
+  0.61208      0.28898    
+  0.28898       1697.3    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.1       1.9571      -246.81    
+   0.0000       1.9571      0.26339      -3.3042    
+   0.0000      -246.81      -3.3042       513.55    
+ new G
+  0.13421E-01 -0.40112E-02
+ -0.40112E-02   440.51    
+ -2logL =    67977.2896640320       : AIC =    68001.2896640320     
+  In round           51  convergence=  1.442419298560240E-008
+  delta convergence=  3.260920201032044E-002
+ new R
+  0.61228      0.28899    
+  0.28899       1697.2    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.2       1.9564      -246.89    
+   0.0000       1.9564      0.26395      -3.3072    
+   0.0000      -246.89      -3.3072       513.50    
+ new G
+  0.12661E-01 -0.12119E-02
+ -0.12119E-02   440.60    
+ -2logL =    67977.0106300412       : AIC =    68001.0106300412     
+  In round           52  convergence=  7.435150406446026E-009
+  delta convergence=  2.376526985460313E-002
+ new R
+  0.61248      0.28903    
+  0.28903       1697.2    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.3       1.9558      -246.96    
+   0.0000       1.9558      0.26447      -3.3102    
+   0.0000      -246.96      -3.3102       513.45    
+ new G
+  0.11940E-01  0.13696E-02
+  0.13696E-02   440.67    
+ -2logL =    67976.7470424294       : AIC =    68000.7470424294     
+  In round           53  convergence=  3.696328948274509E-009
+  delta convergence=  1.703895075191777E-002
+ new R
+  0.61267      0.28909    
+  0.28909       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.3       1.9554      -247.00    
+   0.0000       1.9554      0.26497      -3.3130    
+   0.0000      -247.00      -3.3130       513.42    
+ new G
+  0.11255E-01  0.37492E-02
+  0.37492E-02   440.72    
+ -2logL =    67976.4980088307       : AIC =    68000.4980088307     
+  In round           54  convergence=  1.768038326151927E-009
+  delta convergence=  1.201607010041693E-002
+ new R
+  0.61285      0.28916    
+  0.28916       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.3       1.9552      -247.03    
+   0.0000       1.9552      0.26544      -3.3156    
+   0.0000      -247.03      -3.3156       513.40    
+ new G
+  0.10604E-01  0.59421E-02
+  0.59421E-02   440.76    
+ -2logL =    67976.2626999003       : AIC =    68000.2626999003     
+  In round           55  convergence=  8.114928196463524E-010
+  delta convergence=  8.334990545862887E-003
+ new R
+  0.61302      0.28924    
+  0.28924       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9550      -247.05    
+   0.0000       1.9550      0.26589      -3.3181    
+   0.0000      -247.05      -3.3181       513.38    
+ new G
+  0.99871E-02  0.79624E-02
+  0.79624E-02   440.78    
+ -2logL =    67976.0403412249       : AIC =    68000.0403412249     
+  In round           56  convergence=  3.564851994266940E-010
+  delta convergence=  5.688242018712818E-003
+ new R
+  0.61319      0.28935    
+  0.28935       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9550      -247.06    
+   0.0000       1.9550      0.26632      -3.3205    
+   0.0000      -247.06      -3.3205       513.37    
+ new G
+  0.94014E-02  0.98232E-02
+  0.98232E-02   440.80    
+ -2logL =    67975.8302115173       : AIC =    67999.8302115173     
+  In round           57  convergence=  1.498114372922593E-010
+  delta convergence=  3.821346579126523E-003
+ new R
+  0.61334      0.28946    
+  0.28946       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9550      -247.06    
+   0.0000       1.9550      0.26672      -3.3227    
+   0.0000      -247.06      -3.3227       513.37    
+ new G
+  0.88458E-02  0.11537E-01
+  0.11537E-01   440.81    
+ -2logL =    67975.6316343259       : AIC =    67999.6316343259     
+  In round           58  convergence=  6.072635000661907E-011
+  delta convergence=  2.535383594349953E-003
+ new R
+  0.61349      0.28959    
+  0.28959       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9550      -247.07    
+   0.0000       1.9550      0.26710      -3.3249    
+   0.0000      -247.07      -3.3249       513.37    
+ new G
+  0.83187E-02  0.13115E-01
+  0.13115E-01   440.82    
+ -2logL =    67975.4439789050       : AIC =    67999.4439789050     
+  In round           59  convergence=  2.463355053523215E-011
+  delta convergence=  1.663654504925603E-003
+ new R
+  0.61363      0.28973    
+  0.28973       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9551      -247.07    
+   0.0000       1.9551      0.26746      -3.3269    
+   0.0000      -247.07      -3.3269       513.36    
+ new G
+  0.78189E-02  0.14568E-01
+  0.14568E-01   440.82    
+ -2logL =    67975.2666532537       : AIC =    67999.2666532537     
+  In round           60  convergence=  1.109010169262518E-011
+  delta convergence=  1.110015237068721E-003
+ new R
+  0.61377      0.28988    
+  0.28988       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9552      -247.07    
+   0.0000       1.9552      0.26781      -3.3288    
+   0.0000      -247.07      -3.3288       513.36    
+ new G
+  0.73450E-02  0.15905E-01
+  0.15905E-01   440.83    
+ -2logL =    67975.0991024780       : AIC =    67999.0991024780     
+  In round           61  convergence=  6.479933066211301E-012
+  delta convergence=  8.676198373115422E-004
+ new R
+  0.61390      0.29003    
+  0.29003       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9553      -247.07    
+   0.0000       1.9553      0.26813      -3.3306    
+   0.0000      -247.07      -3.3306       513.37    
+ new G
+  0.68958E-02  0.17136E-01
+  0.17136E-01   440.83    
+ -2logL =    67974.9408055156       : AIC =    67998.9408055156     
+  In round           62  convergence=  5.073457246190647E-012
+  delta convergence=  7.357669642946581E-004
+ new R
+  0.61402      0.29019    
+  0.29019       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9554      -247.07    
+   0.0000       1.9554      0.26844      -3.3323    
+   0.0000      -247.07      -3.3323       513.37    
+ new G
+  0.64701E-02  0.18270E-01
+  0.18270E-01   440.83    
+ -2logL =    67974.7912725251       : AIC =    67998.7912725251     
+  In round           63  convergence=  4.641032684246267E-012
+  delta convergence=  6.669506530631609E-004
+ new R
+  0.61413      0.29036    
+  0.29036       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9556      -247.07    
+   0.0000       1.9556      0.26873      -3.3339    
+   0.0000      -247.07      -3.3339       513.37    
+ new G
+  0.60669E-02  0.19313E-01
+  0.19313E-01   440.83    
+ -2logL =    67974.6500430620       : AIC =    67998.6500430620     
+  In round           64  convergence=  4.409255358218433E-012
+  delta convergence=  6.102162629398443E-004
+ new R
+  0.61424      0.29053    
+  0.29053       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9557      -247.07    
+   0.0000       1.9557      0.26901      -3.3353    
+   0.0000      -247.07      -3.3353       513.37    
+ new G
+  0.56851E-02  0.20273E-01
+  0.20273E-01   440.83    
+ -2logL =    67974.5166839381       : AIC =    67998.5166839381     
+  In round           65  convergence=  4.161901102981164E-012
+  delta convergence=  5.730960805762136E-004
+ new R
+  0.61435      0.29070    
+  0.29070       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9559      -247.07    
+   0.0000       1.9559      0.26927      -3.3368    
+   0.0000      -247.07      -3.3368       513.37    
+ new G
+  0.53237E-02  0.21157E-01
+  0.21157E-01   440.83    
+ -2logL =    67974.3907864266       : AIC =    67998.3907864266     
+  In round           66  convergence=  3.870133675022698E-012
+  delta convergence=  5.548359913621760E-004
+ new R
+  0.61445      0.29087    
+  0.29087       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9560      -247.07    
+   0.0000       1.9560      0.26952      -3.3381    
+   0.0000      -247.07      -3.3381       513.37    
+ new G
+  0.49817E-02  0.21970E-01
+  0.21970E-01   440.83    
+ -2logL =    67974.2719647820       : AIC =    67998.2719647820     
+  In round           67  convergence=  3.553419517290162E-012
+  delta convergence=  5.341772873015826E-004
+ new R
+  0.61454      0.29104    
+  0.29104       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9562      -247.07    
+   0.0000       1.9562      0.26975      -3.3393    
+   0.0000      -247.07      -3.3393       513.38    
+ new G
+  0.46583E-02  0.22718E-01
+  0.22718E-01   440.83    
+ -2logL =    67974.1598551666       : AIC =    67998.1598551666     
+  In round           68  convergence=  3.234356718048039E-012
+  delta convergence=  5.122877158049574E-004
+ new R
+  0.61463      0.29121    
+  0.29121       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9564      -247.07    
+   0.0000       1.9564      0.26997      -3.3405    
+   0.0000      -247.07      -3.3405       513.38    
+ new G
+  0.43526E-02  0.23407E-01
+  0.23407E-01   440.83    
+ -2logL =    67974.0541143134       : AIC =    67998.0541143134     
+  In round           69  convergence=  2.927880058099828E-012
+  delta convergence=  4.898968879359728E-004
+ new R
+  0.61471      0.29137    
+  0.29137       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9565      -247.07    
+   0.0000       1.9565      0.27018      -3.3416    
+   0.0000      -247.07      -3.3416       513.38    
+ new G
+  0.40637E-02  0.24041E-01
+  0.24041E-01   440.83    
+ -2logL =    67973.9544165749       : AIC =    67997.9544165749     
+  In round           70  convergence=  2.641603322674508E-012
+  delta convergence=  4.674467659474013E-004
+ new R
+  0.61479      0.29154    
+  0.29154       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9567      -247.07    
+   0.0000       1.9567      0.27038      -3.3426    
+   0.0000      -247.07      -3.3426       513.38    
+ new G
+  0.37908E-02  0.24624E-01
+  0.24624E-01   440.83    
+ -2logL =    67973.8604543516       : AIC =    67997.8604543516     
+  In round           71  convergence=  2.378294714902083E-012
+  delta convergence=  4.452123429140380E-004
+ new R
+  0.61487      0.29170    
+  0.29170       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9568      -247.07    
+   0.0000       1.9568      0.27056      -3.3436    
+   0.0000      -247.07      -3.3436       513.38    
+ new G
+  0.35333E-02  0.25161E-01
+  0.25161E-01   440.83    
+ -2logL =    67973.7719354603       : AIC =    67997.7719354603     
+  In round           72  convergence=  2.138101853093651E-012
+  delta convergence=  4.233645493574450E-004
+ new R
+  0.61494      0.29186    
+  0.29186       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9570      -247.06    
+   0.0000       1.9570      0.27074      -3.3445    
+   0.0000      -247.06      -3.3445       513.38    
+ new G
+  0.32903E-02  0.25655E-01
+  0.25655E-01   440.83    
+ -2logL =    67973.6885837878       : AIC =    67997.6885837878     
+  In round           73  convergence=  1.919813027413693E-012
+  delta convergence=  4.020200801885806E-004
+ new R
+  0.61500      0.29201    
+  0.29201       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9572      -247.06    
+   0.0000       1.9572      0.27090      -3.3454    
+   0.0000      -247.06      -3.3454       513.38    
+ new G
+  0.30613E-02  0.26109E-01
+  0.26109E-01   440.83    
+ -2logL =    67973.6101378410       : AIC =    67997.6101378410     
+  In round           74  convergence=  1.721871040029013E-012
+  delta convergence=  3.812436202203071E-004
+ new R
+  0.61507      0.29216    
+  0.29216       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9573      -247.06    
+   0.0000       1.9573      0.27106      -3.3462    
+   0.0000      -247.06      -3.3462       513.38    
+ new G
+  0.28455E-02  0.26527E-01
+  0.26527E-01   440.83    
+ -2logL =    67973.5363471119       : AIC =    67997.5363471119     
+  In round           75  convergence=  1.542520127957634E-012
+  delta convergence=  3.610919659003631E-004
+ new R
+  0.61513      0.29231    
+  0.29231       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9574      -247.06    
+   0.0000       1.9574      0.27121      -3.3469    
+   0.0000      -247.06      -3.3469       513.38    
+ new G
+  0.26423E-02  0.26911E-01
+  0.26911E-01   440.83    
+ -2logL =    67973.4669758686       : AIC =    67997.4669758686     
+  In round           76  convergence=  1.380132654935074E-012
+  delta convergence=  3.415878365394203E-004
+ new R
+  0.61518      0.29245    
+  0.29245       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9576      -247.06    
+   0.0000       1.9576      0.27134      -3.3477    
+   0.0000      -247.06      -3.3477       513.39    
+ new G
+  0.24511E-02  0.27265E-01
+  0.27265E-01   440.83    
+ -2logL =    67973.4017997431       : AIC =    67997.4017997431     
+  In round           77  convergence=  1.233168200350846E-012
+  delta convergence=  3.227575206741593E-004
+ new R
+  0.61524      0.29258    
+  0.29258       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9577      -247.06    
+   0.0000       1.9577      0.27147      -3.3483    
+   0.0000      -247.06      -3.3483       513.39    
+ new G
+  0.22713E-02  0.27590E-01
+  0.27590E-01   440.83    
+ -2logL =    67973.3406030861       : AIC =    67997.3406030861     
+  In round           78  convergence=  1.100228827519046E-012
+  delta convergence=  3.046105604061839E-004
+ new R
+  0.61529      0.29271    
+  0.29271       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9578      -247.06    
+   0.0000       1.9578      0.27159      -3.3489    
+   0.0000      -247.06      -3.3489       513.39    
+ new G
+  0.21024E-02  0.27889E-01
+  0.27889E-01   440.83    
+ -2logL =    67973.2831831260       : AIC =    67997.2831831260     
+  In round           79  convergence=  9.800935497483008E-013
+  delta convergence=  2.871491551693580E-004
+ new R
+  0.61533      0.29284    
+  0.29284       1697.1    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9580      -247.06    
+   0.0000       1.9580      0.27171      -3.3495    
+   0.0000      -247.06      -3.3495       513.39    
+ new G
+  0.19439E-02  0.28164E-01
+  0.28164E-01   440.83    
+ * END iteration: 08-27-2020  12h 08m 03s 197
+ solutions and s.e. stored in file: "solutions"
+   1.000000       550.0000     -0.3887406      -2.932411    
+   2.000000      0.0000000E+00  0.2487450      0.0000000E+00
+   2.000000      0.0000000E+00  0.3860575      0.0000000E+00
+   3.000000       584.0000      0.8539246       36.85707    
+   1.000000       561.0000     -0.4608414       20.76650    
+   1.000000       631.0000     -0.2760535       32.44075    
+   1.000000       619.0000     -0.5762251       39.93907    
+   2.000000       604.0000      0.2365700       46.69206    
+   2.000000       594.0000      0.5498204       28.76727    
+ wrote yhat and residual in file "yhat_residual"
+
+Final Estimates
+ Genetic variance(s) for effect  2       
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1382.4       1.9580      -247.06    
+   0.0000       1.9580      0.27171      -3.3495    
+   0.0000      -247.06      -3.3495       513.39    
+   correlations
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1.0000      0.10103     -0.29327    
+   0.0000      0.10103       1.0000     -0.28360    
+   0.0000     -0.29327     -0.28360       1.0000    
+   eigenvectors
+   1.0000       0.0000       0.0000       0.0000    
+   0.0000      0.27332E-03  0.25565     -0.96677    
+   0.0000     -0.99998     -0.61134E-02 -0.18993E-02
+   0.0000     -0.63958E-02  0.96675      0.25564    
+  eigenvalues
+   0.0000      0.24975       448.08       1447.7    
+ Genetic variance(s) for effect  4       
+  0.19439E-02  0.28164E-01
+  0.28164E-01   440.83    
+   correlations
+   1.0000      0.30425E-01
+  0.30425E-01   1.0000    
+   eigenvectors
+  -1.0000      0.63889E-04
+  0.63889E-04   1.0000    
+  eigenvalues
+  0.19421E-02   440.83    
+ Residual variance(s)
+  0.61533      0.29284    
+  0.29284       1697.1    
+   correlations
+   1.0000      0.90619E-02
+  0.90619E-02   1.0000    
+   eigenvectors
+  -1.0000      0.17262E-03
+  0.17262E-03   1.0000    
+  eigenvalues
+  0.61528       1697.1    
+ inverse of AI matrix (Sampling Variance)
+   25971.       17.803      -8569.3      0.16241E-02  -6.0117       1903.2      0.98391E-05  0.71945E-01   95.691      0.12369E-02  0.29317      -13084.    
+   17.803       3.0496      -23.080      0.26427E-02  -1.1742       17.075     -0.29466E-05 -0.76562E-02 -0.87006     -0.64504E-03 -0.66357E-01  -8.1095    
+  -8569.3      -23.080       9546.8     -0.88764E-02   13.283      -5546.3     -0.29662E-04 -0.24767      -587.92     -0.13299E-02  -1.1155       4352.6    
+  0.16241E-02  0.26427E-02 -0.88764E-02  0.54690E-03 -0.38833E-02  0.15562E-01 -0.65667E-06  0.90066E-04 -0.19506E-03 -0.19647E-03  0.13910E-03 -0.11354E-02
+  -6.0117      -1.1742       13.283     -0.38833E-02   1.3157      -19.238     -0.36349E-05 -0.52692E-01   3.2317      0.79351E-03 -0.23729       3.2617    
+   1903.2       17.075      -5546.3      0.15562E-01  -19.238       8886.1      0.66796E-04  0.45857      -2370.0      0.18740E-02   2.7803      -1228.9    
+  0.98391E-05 -0.29466E-05 -0.29662E-04 -0.65667E-06 -0.36349E-05  0.66796E-04  0.93514E-06  0.11237E-04 -0.30433E-04 -0.34133E-06 -0.52194E-05 -0.81555E-05
+  0.71945E-01 -0.76562E-02 -0.24767      0.90066E-04 -0.52692E-01  0.45857      0.11237E-04  0.90019E-01 -0.88515E-01 -0.57239E-04 -0.33630E-01 -0.92306E-01
+   95.691     -0.87006      -587.92     -0.19506E-03   3.2317      -2370.0     -0.30433E-04 -0.88515E-01   3808.7     -0.17972E-02 -0.97575      -910.04    
+  0.12369E-02 -0.64504E-03 -0.13299E-02 -0.19647E-03  0.79351E-03  0.18740E-02 -0.34133E-06 -0.57239E-04 -0.17972E-02  0.33781E-03  0.65517E-04 -0.66449E-03
+  0.29317     -0.66357E-01  -1.1155      0.13910E-03 -0.23729       2.7803     -0.52194E-05 -0.33630E-01 -0.97575      0.65517E-04   1.1709     -0.22152    
+  -13084.      -8.1095       4352.6     -0.11354E-02   3.2617      -1228.9     -0.81555E-05 -0.92306E-01  -910.04     -0.66449E-03 -0.22152       8733.2    
+ Correlations from inverse of AI matrix
+   1.0000      0.63259E-01 -0.54421      0.43094E-03 -0.32522E-01  0.12528      0.63135E-04  0.14879E-02  0.96213E-02  0.41757E-03  0.16812E-02 -0.86879    
+  0.63259E-01   1.0000     -0.13527      0.64710E-01 -0.58621      0.10373     -0.17449E-02 -0.14613E-01 -0.80732E-02 -0.20097E-01 -0.35117E-01 -0.49693E-01
+ -0.54421     -0.13527       1.0000     -0.38847E-02  0.11852     -0.60217     -0.31393E-03 -0.84486E-02 -0.97499E-01 -0.74052E-03 -0.10551E-01  0.47669    
+  0.43094E-03  0.64710E-01 -0.38847E-02   1.0000     -0.14477      0.70591E-02 -0.29037E-01  0.12836E-01 -0.13515E-03 -0.45708      0.54968E-02 -0.51953E-03
+ -0.32522E-01 -0.58621      0.11852     -0.14477       1.0000     -0.17792     -0.32770E-02 -0.15311      0.45652E-01  0.37639E-01 -0.19119      0.30428E-01
+  0.12528      0.10373     -0.60217      0.70591E-02 -0.17792       1.0000      0.73275E-03  0.16214E-01 -0.40739      0.10816E-02  0.27258E-01 -0.13950    
+  0.63135E-04 -0.17449E-02 -0.31393E-03 -0.29037E-01 -0.32770E-02  0.73275E-03   1.0000      0.38729E-01 -0.50995E-03 -0.19204E-01 -0.49880E-02 -0.90246E-04
+  0.14879E-02 -0.14613E-01 -0.84486E-02  0.12836E-01 -0.15311      0.16214E-01  0.38729E-01   1.0000     -0.47804E-02 -0.10380E-01 -0.10359     -0.32921E-02
+  0.96213E-02 -0.80732E-02 -0.97499E-01 -0.13515E-03  0.45652E-01 -0.40739     -0.50995E-03 -0.47804E-02   1.0000     -0.15844E-02 -0.14612E-01 -0.15779    
+  0.41757E-03 -0.20097E-01 -0.74052E-03 -0.45708      0.37639E-01  0.10816E-02 -0.19204E-01 -0.10380E-01 -0.15844E-02   1.0000      0.32943E-02 -0.38687E-03
+  0.16812E-02 -0.35117E-01 -0.10551E-01  0.54968E-02 -0.19119      0.27258E-01 -0.49880E-02 -0.10359     -0.14612E-01  0.32943E-02   1.0000     -0.21906E-02
+ -0.86879     -0.49693E-01  0.47669     -0.51953E-03  0.30428E-01 -0.13950     -0.90246E-04 -0.32921E-02 -0.15779     -0.38687E-03 -0.21906E-02   1.0000    
+ SE for G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       161.16       1.7463       97.708    
+   0.0000       1.7463      0.23386E-01   1.1470    
+   0.0000       97.708       1.1470       94.266    
+ SE for G
+  0.96703E-03  0.30003    
+  0.30003       61.715    
+ SE for R
+  0.18380E-01   1.0821    
+   1.0821       93.451    
+  
+ Sampling variances of covariances function of random effects (n=1000000)
+  
+hmwm  - Function: g_3_3_1_2/(g_3_3_1_1*g_3_3_2_2)^0.5
+  Mean:  -0.28360    
+  Sample Mean:  -0.28596    
+  Sample SD:   0.97298E-01
+  
+wmwd  - Function: g_2_3_2_2/(g_2_2_2_2*g_3_3_2_2)^0.5
+  Mean:  -0.29327    
+  Sample Mean:  -0.28843    
+  Sample SD:   0.96611E-01
+  
+wdhm  - Function: g_2_3_2_1/(g_2_2_2_2*g_3_3_1_1)^0.5
+  Mean:   0.10103    
+  Sample Mean:   0.10128    
+  Sample SD:   0.90820E-01
+ elapsed time   1.660156    
+ * FINISHED (AIREMLF90): 08-27-2020  12h 47m 55s 606

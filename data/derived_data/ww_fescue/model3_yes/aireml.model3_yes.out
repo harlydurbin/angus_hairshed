@@ -1,0 +1,781 @@
+ * START JOB (AIREMLF90): 08-25-2020  19h 56m 18s 331
+
+renf90.par
+     AI-REMLF90 ver. 1.135
+
+ Parameter file:             renf90.par
+ Data file:                  renf90.dat
+ Number of Traits             2
+ Number of Effects            4
+ Position of Observations      1  2
+ Position of Weight (1)        0
+ Value of Missing Trait/Observation           0
+
+EFFECTS
+ #  type                position (2)        levels   [positions for nested]
+    1  cross-classified       3    4                                             425
+    2  cross-classified       0    5                                           17833
+    3  cross-classified       6    6                                           17833
+    4  cross-classified       6    6                                           17833
+
+ Residual (co)variance Matrix
+ 0.50000     0.10000    
+ 0.10000      1500.0    
+
+ correlated random effects     2  3
+ Type of Random Effect:      additive animal with unknown parent groups and inbreeding
+ Pedigree File:              renadd02.ped                                                                                                                                                                                                                                              
+ trait   effect    (CO)VARIANCES
+  1       2     0.000       0.000       0.000       0.000    
+  2       2     0.000       800.0      0.1000E-01  -200.0    
+  1       3     0.000      0.1000E-01  0.1000      0.1000E-01
+  2       3     0.000      -200.0      0.1000E-01   300.0    
+
+ Random Effect(s)    4
+ Type of Random Effect:      diagonal
+ trait   effect    (CO)VARIANCES
+  1       4    0.1000      0.1000E-01
+  2       4    0.1000E-01   200.0    
+
+ REMARKS
+  (1) Weight position 0 means no weights utilized
+  (2) Effect positions of 0 for some effects and traits means that such
+      effects are missing for specified traits
+ 
+ * convergence criterion (default=1e-12):  1.000000000000000E-012
+ # EM-REML iterations (default=0):          10
+ *** store solutions and s.e. *** se                  
+ * yhat and residual will be shown in yhat_residual
+ * sparse package: YAMS
+* SE for function of (co)variances hmwm G_3_3_1_2/(G_3_3_1_1*G_3_3_2_2)**0.5
+* SE for function of (co)variances wmwd G_2_3_2_2/(G_2_2_2_2*G_3_3_2_2)**0.5
+* SE for function of (co)variances wdhm G_2_3_2_1/(G_2_2_2_2*G_3_3_1_1)**0.5
+ *** number of samples to calculate SE for function of (co)variances*** 
+     1000000
+ 
+
+Options read from parameter file:
+
+ * SNP file: genotypes.txt
+ * SNP Xref file: genotypes.txt_XrefID
+ * Map file: ../../chrinfo.imputed_hair.txt
+ * Use only SNP with allele freq > minfreq (default minfreq = 0.05):   0.00
+ * Sex Chromosome (default 0)  30
+ * use YAMS package for sparse computation (default=.false.)
+ Data record length =            6
+ # free parameters=          12
+ # parameters=          17
+ # random effects=           3
+ # elements for random effects=           9
+ # maximum (ntrait*random)**2=          16
+ # (co)variance matrices=           2
+hash matrix increased from            8192 to           16384 % filled:     0.8000
+hash matrix increased from           16384 to           32768 % filled:     0.8000
+hash matrix increased from           32768 to           65536 % filled:     0.8000
+hash matrix increased from           65536 to          131072 % filled:     0.8000
+hash matrix increased from          131072 to          262144 % filled:     0.8000
+hash matrix increased from          262144 to          524288 % filled:     0.8000
+ read        12776  records in   0.7380560      s,                  222620 
+  nonzeroes
+hash matrix increased from            8192 to           16384 % filled:     0.8000
+hash matrix increased from           16384 to           32768 % filled:     0.8000
+hash matrix increased from           32768 to           65536 % filled:     0.8000
+hash matrix increased from          524288 to         1048576 % filled:     0.8000
+hash matrix increased from           65536 to          131072 % filled:     0.8000
+  read        17833  additive pedigrees
+ 
+ *--------------------------------------------------------------*
+ *                 Genomic Library: Dist Version 1.239          *
+ *                                                              *
+ *             Optimized OpenMP Version - 72 threads            *
+ *                                                              *
+ *  Modified relationship matrix (H) created for effect:   2    *
+ *--------------------------------------------------------------*
+ 
+ Read 17833 animals from pedigree file: "renadd02.ped"
+ Number of Genotyped Animals: 2447
+
+ Creating A22 
+    Extracting subset of: 4471 pedigrees from: 17833 elapsed time:     0.0337
+    Calculating A22 Matrix by Colleau OpenMP...elapsed time: .0251
+    Numbers of threads=36 72
+
+ Reading SNP file
+    Column position in file for the first marker: 22
+    Format to read SNP file: (21x,400000i1)                                    
+    Number of SNPs: 233246
+    Format: integer genotypes (0 to 5) to double-precision array
+    Number of Genotyped animals: 2447
+    Reading SNP file elapsed time: 30.01
+ 
+ Statistics of alleles frequencies in the current population
+    N:         233246
+    Mean:       0.495
+    Min:        0.000
+    Max:        1.000
+    Var:        0.161
+
+ Reading MAP file: "../../chrinfo.imputed_hair.txt" - 233246 SNPs out of 233246
+
+    Min and max # of chromosome: 1 29
+
+    Min and max # of SNP: 1 233246
+ 
+ Quality Control - SNPs with Call Rate < callrate ( 0.90) will removed: 0
+ 
+ Quality Control - SNPs with MAF < minfreq ( 0.00) will removed: 65001
+ 
+ Quality Control - Monomorphic SNPs will be removed: 65001
+
+ Quality Control - Removed Animals with Call rate < callrate ( 0.90): 0
+
+ Quality Control - Check Parent-Progeny Mendelian conflicts
+
+    Total animals: 17833 - Genotyped animals: 2447 - Effective: 2447
+
+    Number of pairs Individual - Sire: 274
+    Number of pairs Individual - Dam: 1277
+    Number of trios Individual - Sire - Dam: 187
+
+    SNPs from sex chr were MASKED for checks on Parentage conflicts or HWE: 0
+    SNPs from sex chr with no flags: 0
+
+ Checking SNPs for Mendelian conflicts
+
+    Total number of effective SNP: 168245
+    Total number of parent-progeny evaluations: 1551
+    Number of SNPs with Mendelian conflicts: 0
+
+ Checking Animals for Mendelian conflicts
+
+    Total number of effective SNP for checks on Animals: 168245
+
+    Number of Parent-Progeny Mendelian Conflicts: 43
+    Output stored in "Gen_conflicts"
+  
+    ****************************************************************
+    **      ALL PROGENY with conflicts will be removed !!!!       **
+    **                                                            **
+    **     Use seekparentf90 program to correct conflicts !!      **
+    ****************************************************************
+
+    SNPs from sex chr were UNMASKED for checks on Parentage conflicts or HWE: 0
+    SNPs from sex chr with no flags: 0
+
+ Number of effective SNPs (after QC): 168245
+
+ Number of effective Indiviuals (after QC): 2405
+ 
+ Statistics of alleles frequencies in the current population after
+ Quality Control (MAF, monomorphic, call rate, HWE, Mendelian conflicts)
+    N:         168245
+    Mean:       0.518
+    Min:        0.000
+    Max:        1.000
+    Var:        0.126
+
+ Number of Animals to be excluded from analysis: 65001
+
+    For calulations in the current analysis number
+    of genotyped animals are the same but:
+
+       Diagonals of G and A22 are set to 1
+       Off-Diagonals of G and A22 are set to 0
+
+ List of Animals removed in: "genotypes.txt_Animals_removed"
+
+ List of SNPs removed in: "genotypes.txt_SNPs_removed"
+
+ Clean genotype file was created: "genotypes.txt_clean"
+
+ Cross reference ID file was created: "genotypes.txt_clean_XrefID"
+
+ Genotypes missings (%): 27.868
+
+ Genotypes missings after cleannig (%):  0.000
+
+ Calculating G Matrix 
+    Dgemm MKL #threads=    36   72 Elapsed omp_get_time:     7.3612
+ 
+ Scale by Sum(2pq). Average:   41512.0883649650     
+
+ Detecting samples with similar genotypes
+    elapsed time=     0.1
+
+ *****************************************
+ *  Possible genotype duplicates samples *
+ *****************************************
+
+    i-j number of sample , i-j renumber Id, G(i,j), G(i,i), G(j,j), r(i,j) 
+        1295    1294   13429   13428  1.0027  1.0055  1.0038  0.9980
+        1979    1978   13587   13586  0.8644  0.9292  0.9386  0.9256
+    elapsed time=     0.0
+ 
+ Blend G as alpha*G + beta*A22: (alpha,beta)     0.950     0.050
+
+ Frequency - Diagonal of G
+    N:        2405
+    Mean:        1.004
+    Min:         0.863
+    Max:         1.380
+    Range:       0.026
+    Class:     20
+ 
+  #Class       Class   Count
+       1  0.8633           3
+       2  0.8891           2
+       3  0.9149          38
+       4  0.9407         276
+       5  0.9666         677
+       6  0.9924         692
+       7   1.018         417
+       8   1.044         165
+       9   1.070          65
+      10   1.096          36
+      11   1.121          22
+      12   1.147           6
+      13   1.173           3
+      14   1.199           0
+      15   1.225           0
+      16   1.251           0
+      17   1.276           1
+      18   1.302           0
+      19   1.328           1
+      20   1.354           1
+      21   1.380           0
+ 
+
+ Check for diagonal of genomic relationship matrix
+
+
+ Check for diagonal of genomic relationship matrix, genotypes not removed: 0
+
+ ------------------------------
+  Final Pedigree-Based Matrix 
+ ------------------------------
+ 
+ Statistic of Rel. Matrix A22
+                            N      Mean       Min       Max       Var
+     Diagonal            2447     1.004     1.000     1.250     0.000
+     Off-diagonal     5985362     0.008     0.000     0.750     0.001
+ 
+
+ ----------------------
+  Final Genomic Matrix 
+ ----------------------
+ 
+ Statistic of Genomic Matrix
+                            N      Mean       Min       Max       Var
+     Diagonal            2447     1.004     0.863     1.380     0.002
+     Off-diagonal     5985362     0.008    -0.113     0.979     0.002
+ 
+
+ Correlation of Genomic Inbreeding and Pedigree Inbreeding
+     Correlation:     0.3443
+ 
+ All elements - Diagonal / Off-Diagonal
+    Estimating Regression Coefficients G = b0 11' + b1 A + e
+    Regression coefficients b0 b1 =     -0.000     0.985
+
+    Correlation all elements G & A     0.781
+ 
+ Off-Diagonal
+    Using 524220 elements from A22 >= .02000
+
+    Estimating Regression Coefficients G = b0 11' + b1 A + e
+    Regression coefficients b0 b1 =      0.003     0.956
+
+    Correlation Off-Diagonal elements G & A     0.851
+ 
+
+ Creating A22-inverse 
+    Inverse LAPACK MKL dpotrf/i  #threads=   36   72 Elapsed omp_get_time:     0.3575
+
+ ----------------------
+  Final A22 Inv Matrix 
+ ----------------------
+ 
+ Statistic of Inv. Rel. Matrix A22
+                            N      Mean       Min       Max       Var
+     Diagonal            2447     1.859     1.000    19.195     0.634
+     Off-diagonal     5985362    -0.001    -1.179     1.033     0.001
+ 
+ 
+ Creating G-inverse 
+    Inverse LAPACK MKL dpotrf/i  #threads=   36   72 Elapsed omp_get_time:     0.1267
+
+ --------------------------
+  Final Genomic Inv Matrix 
+ --------------------------
+ 
+ Statistic of Inv. Genomic Matrix
+                            N      Mean       Min       Max       Var
+     Diagonal            2447     3.309     0.914    28.337     1.592
+     Off-diagonal     5985362    -0.001   -17.921     1.335     0.003
+ 
+
+ Check for diagonal of Inverse Genomic - Inverse of pedigree relationship matrix
+
+ Number of genotypes with G^ii < A22^ii: 6
+ Genotype number, renumber id and Gi-A22i print in file: "Check_Diagonal_GimA22i"
+
+ ------------------------------
+  Final G Inv - A22 Inv Matrix 
+ ------------------------------
+ 
+ Statistic of Inv. Genomic- A22 Matrix
+                            N      Mean       Min       Max       Var
+     Diagonal            2447     1.450    -0.589    17.878     0.490
+     Off-diagonal     5985362    -0.001   -17.921     0.780     0.002
+ 
+
+*--------------------------------------------------*
+* Setup Genomic Done !!!, elapsed time:     81.757 *
+*--------------------------------------------------*
+
+ wGimA22i   1.00000000000000     
+hash matrix increased from          131072 to          262144 % filled:     0.8000
+hash matrix increased from          262144 to          524288 % filled:     0.8000
+hash matrix increased from          524288 to         1048576 % filled:     0.8000
+hash matrix increased from         1048576 to         2097152 % filled:     0.8000
+hash matrix increased from         2097152 to         4194304 % filled:     0.8000
+hash matrix increased from         1048576 to         2097152 % filled:     0.8000
+hash matrix increased from         2097152 to         4194304 % filled:     0.8000
+hash matrix increased from         4194304 to         8388608 % filled:     0.8000
+hash matrix increased from         8388608 to        16777216 % filled:     0.8000
+hash matrix increased from        16777216 to        33554432 % filled:     0.8000
+hash matrix increased from        33554432 to        67108864 % filled:     0.8000
+hash matrix increased from            8192 to           16384 % filled:     0.8000
+hash matrix increased from           16384 to           32768 % filled:     0.8000
+ finished peds in    414.5695      s,                27591122  nonzeroes
+ rank=       89770
+
+ YAMS: Yet Another MME Solver  Version 1.1.5           
+--------------------------------------------------------------
+ Original MME:
+   No. of Equations                =        107848
+   No. of Nonzeros                 =      27609200
+   IA byte type                    =             4
+   Ordering Method                 =           AMD
+   Factor Type                     =           LDL
+   Algorithm for Factorization     =         SN LL
+   Algorithm for Inversion         =         INVMF
+ Supernodes (SNs):
+   No. of SNs.                     =         62201
+   No. of Cols. in the Last SN.    =          7715
+   Frequent No. of Cols.           =             1
+   Its Count                       =         29498
+   Its Ratio (%)                   =      47.42367
+   Threshold of Split              =    2147483647
+ Factor (L):
+   User-defined Constraint         =             0
+   Rank                            =         89770
+   No. of Constraints              =         18078
+   Panel Size                      =           256
+   Tolerances for Kachman mod.     =     1.000E-10     1.000E-10
+   Detection of Panel Size (1:YES) =             0
+ Memory:
+   No. of Effective Entries in L   =      32906918
+   No. of Allocated Entries in L   =      35715317
+   Storage for L              (MB) =         272.5
+   Storage for Integer Arrays (MB) =           4.4
+   Temp. Mem. for FACT.       (MB) =           5.2
+   Temp. Mem. for INV.        (MB) =         453.8
+ CPU & System Time in the last call:
+   Ordering                  (sec) =          19.5           4.0
+   Symbolic Fact.            (sec) =           3.6           3.6
+   Numerical Fact.           (sec) =          75.9           6.4
+   Sparse Inversion          (sec) =         193.3           6.8
+   Solution                  (sec) =           6.8           0.1
+
+ -2logL =    69378.2935039240       : AIC =    69402.2935039240     
+  In round            1  convergence=  6.076025824795000E-004
+ round            1
+ new r
+  0.55061     -0.61711    
+ -0.61711       1739.2    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       822.00      0.29281E-02  -204.52    
+   0.0000      0.29281E-02  0.10155     -0.70259E-02
+   0.0000      -204.52     -0.70259E-02   303.33    
+ new G
+  0.10102     -0.10603E-02
+ -0.10603E-02   202.47    
+ * START iteration: 08-25-2020  19h 58m 35s 307
+ -2logL =    69147.9788060303       : AIC =    69171.9788060303     
+  In round            2  convergence=  1.428976011094377E-004
+ round            2
+ new r
+  0.56859      -1.1057    
+  -1.1057       1874.5    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       832.74     -0.32794E-02  -206.62    
+   0.0000     -0.32794E-02  0.10286     -0.22141E-01
+   0.0000      -206.62     -0.22141E-01   305.30    
+ new G
+  0.10174     -0.10173E-01
+ -0.10173E-01   204.10    
+ -2logL =    69093.1686788476       : AIC =    69117.1686788476     
+  In round            3  convergence=  4.207582295184917E-005
+ round            3
+ new r
+  0.57421      -1.3830    
+  -1.3830       1944.3    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       838.50     -0.90180E-02  -207.68    
+   0.0000     -0.90180E-02  0.10410     -0.36467E-01
+   0.0000      -207.68     -0.36467E-01   306.68    
+ new G
+  0.10237     -0.18412E-01
+ -0.18412E-01   205.36    
+ -2logL =    69077.6080109591       : AIC =    69101.6080109591     
+  In round            4  convergence=  1.637392782424314E-005
+ round            4
+ new r
+  0.57544      -1.5252    
+  -1.5252       1978.2    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       841.99     -0.14514E-01  -208.28    
+   0.0000     -0.14514E-01  0.10532     -0.50515E-01
+   0.0000      -208.28     -0.50515E-01   307.78    
+ new G
+  0.10295     -0.26255E-01
+ -0.26255E-01   206.43    
+ -2logL =    69071.0165604274       : AIC =    69095.0165604274     
+  In round            5  convergence=  8.637496818240997E-006
+ round            5
+ new r
+  0.57515      -1.5911    
+  -1.5911       1993.7    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       844.42     -0.19890E-01  -208.65    
+   0.0000     -0.19890E-01  0.10654     -0.64525E-01
+   0.0000      -208.65     -0.64525E-01   308.75    
+ new G
+  0.10353     -0.33927E-01
+ -0.33927E-01   207.43    
+ -2logL =    69066.5152434946       : AIC =    69090.5152434946     
+  In round            6  convergence=  5.903752494010044E-006
+ round            6
+ new r
+  0.57432      -1.6158    
+  -1.6158       2000.2    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       846.33     -0.25207E-01  -208.93    
+   0.0000     -0.25207E-01  0.10776     -0.78612E-01
+   0.0000      -208.93     -0.78612E-01   309.66    
+ new G
+  0.10409     -0.41537E-01
+ -0.41537E-01   208.39    
+ -2logL =    69062.5293241847       : AIC =    69086.5293241847     
+  In round            7  convergence=  4.796307530578234E-006
+ round            7
+ new r
+  0.57333      -1.6188    
+  -1.6188       2002.4    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       847.99     -0.30501E-01  -209.16    
+   0.0000     -0.30501E-01  0.10900     -0.92832E-01
+   0.0000      -209.16     -0.92832E-01   310.55    
+ new G
+  0.10465     -0.49138E-01
+ -0.49138E-01   209.33    
+ -2logL =    69058.6967957056       : AIC =    69082.6967957056     
+  In round            8  convergence=  4.296586603542360E-006
+ round            8
+ new r
+  0.57227      -1.6103    
+  -1.6103       2002.4    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       849.53     -0.35785E-01  -209.37    
+   0.0000     -0.35785E-01  0.11024     -0.10721    
+   0.0000      -209.37     -0.10721       311.42    
+ new G
+  0.10521     -0.56756E-01
+ -0.56756E-01   210.27    
+ -2logL =    69054.9343327406       : AIC =    69078.9343327406     
+  In round            9  convergence=  4.049054130196622E-006
+ min,max changes:   0.805854775887272        1.02207238828629     
+ round            9
+ new r
+  0.57121      -1.5960    
+  -1.5960       2001.3    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       851.00     -0.41069E-01  -209.57    
+   0.0000     -0.41069E-01  0.11149     -0.12176    
+   0.0000      -209.57     -0.12176       312.28    
+ new G
+  0.10576     -0.64403E-01
+ -0.64403E-01   211.20    
+ -2logL =    69051.2229304620       : AIC =    69075.2229304620     
+  In round           10  convergence=  3.913477718020617E-006
+ round           10
+ new r
+  0.57015      -1.5786    
+  -1.5786       1999.8    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       852.44     -0.46353E-01  -209.77    
+   0.0000     -0.46353E-01  0.11275     -0.13649    
+   0.0000      -209.77     -0.13649       313.14    
+ new G
+  0.10630     -0.72084E-01
+ -0.72084E-01   212.13    
+ -2logL =    69047.5584811834       : AIC =    69071.5584811834     
+  In round           11  convergence=  9.032680511382346E-002
+  delta convergence=   78.5148297244182     
+ new R
+  0.52121     -0.30110    
+ -0.30110       1749.8    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1061.8      0.89553E-01  -380.20    
+   0.0000      0.89553E-01  0.23117      -1.5442    
+   0.0000      -380.20      -1.5442       397.01    
+ new G
+  0.10334     -0.94196    
+ -0.94196       436.78    
+ -2logL =    68869.3624256024       : AIC =    68893.3624256024     
+  In round           12  convergence=  7.831545818066386E-003
+  delta convergence=   21.3159844437284     
+ new R
+  0.51987     -0.20255    
+ -0.20255       1713.4    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1126.8      0.32170      -444.03    
+   0.0000      0.32170      0.33372      -2.8753    
+   0.0000      -444.03      -2.8753       446.44    
+ new G
+  0.64753E-01 -0.88833    
+ -0.88833       475.98    
+ -2logL =    68843.7002205633       : AIC =    68867.7002205633     
+  In round           13  convergence=  2.514608975992983E-004
+  delta convergence=   3.52017289370758     
+ new R
+  0.51919     -0.19681    
+ -0.19681       1707.3    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1137.4      0.29001      -455.81    
+   0.0000      0.29001      0.36804      -3.2443    
+   0.0000      -455.81      -3.2443       458.65    
+ new G
+  0.52426E-01 -0.81989    
+ -0.81989       477.01    
+ -2logL =    68842.1766516422       : AIC =    68866.1766516422     
+  In round           14  convergence=  3.892338590123757E-006
+  delta convergence=  0.441802376114974     
+ new R
+  0.51904     -0.19707    
+ -0.19707       1706.4    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1139.0      0.22827      -457.33    
+   0.0000      0.22827      0.37255      -3.2420    
+   0.0000      -457.33      -3.2420       459.80    
+ new G
+  0.50651E-01 -0.82462    
+ -0.82462       477.15    
+ -2logL =    68842.1525578841       : AIC =    68866.1525578841     
+  In round           15  convergence=  2.222913093923426E-007
+  delta convergence=  0.101426423568921     
+ new R
+  0.51902     -0.19691    
+ -0.19691       1706.2    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1139.3      0.20813      -457.71    
+   0.0000      0.20813      0.37298      -3.2309    
+   0.0000      -457.71      -3.2309       460.07    
+ new G
+  0.50439E-01 -0.82756    
+ -0.82756       477.16    
+ -2logL =    68842.1521140018       : AIC =    68866.1521140018     
+  In round           16  convergence=  2.002293868875946E-008
+  delta convergence=  2.974488355313562E-002
+ new R
+  0.51902     -0.19681    
+ -0.19681       1706.2    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1139.4      0.20309      -457.83    
+   0.0000      0.20309      0.37303      -3.2278    
+   0.0000      -457.83      -3.2278       460.15    
+ new G
+  0.50411E-01 -0.82819    
+ -0.82819       477.16    
+ -2logL =    68842.1520959079       : AIC =    68866.1520959079     
+  In round           17  convergence=  1.526141881079054E-009
+  delta convergence=  8.168616917866803E-003
+ new R
+  0.51902     -0.19678    
+ -0.19678       1706.2    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1139.4      0.20189      -457.86    
+   0.0000      0.20189      0.37304      -3.2271    
+   0.0000      -457.86      -3.2271       460.18    
+ new G
+  0.50406E-01 -0.82832    
+ -0.82832       477.16    
+ -2logL =    68842.1520948698       : AIC =    68866.1520948698     
+  In round           18  convergence=  1.024458237950621E-010
+  delta convergence=  2.112055326091851E-003
+ new R
+  0.51902     -0.19677    
+ -0.19677       1706.2    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1139.4      0.20160      -457.87    
+   0.0000      0.20160      0.37304      -3.2269    
+   0.0000      -457.87      -3.2269       460.19    
+ new G
+  0.50405E-01 -0.82835    
+ -0.82835       477.16    
+ -2logL =    68842.1520943290       : AIC =    68866.1520943290     
+  In round           19  convergence=  6.411836458452789E-012
+  delta convergence=  5.282282789441070E-004
+ new R
+  0.51902     -0.19677    
+ -0.19677       1706.2    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1139.4      0.20153      -457.87    
+   0.0000      0.20153      0.37304      -3.2269    
+   0.0000      -457.87      -3.2269       460.19    
+ new G
+  0.50405E-01 -0.82835    
+ -0.82835       477.16    
+ -2logL =    68842.1520947509       : AIC =    68866.1520947509     
+  In round           20  convergence=  3.860737343690050E-013
+  delta convergence=  1.296626837259885E-004
+ new R
+  0.51902     -0.19677    
+ -0.19677       1706.2    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1139.4      0.20152      -457.87    
+   0.0000      0.20152      0.37304      -3.2268    
+   0.0000      -457.87      -3.2268       460.19    
+ new G
+  0.50405E-01 -0.82836    
+ -0.82836       477.16    
+ * END iteration: 08-25-2020  19h 58m 35s 307
+ solutions and s.e. stored in file: "solutions"
+   1.000000      0.0000000E+00 -0.8251390      0.0000000E+00
+   4.000000      0.0000000E+00   1.046436      0.0000000E+00
+   2.000000      0.0000000E+00  9.4755620E-02  0.0000000E+00
+   3.000000      0.0000000E+00  0.7703550      0.0000000E+00
+   1.000000      0.0000000E+00 -0.4895840      0.0000000E+00
+   2.000000      0.0000000E+00 -4.4443186E-02  0.0000000E+00
+   3.000000      0.0000000E+00  0.3972267      0.0000000E+00
+   1.000000      0.0000000E+00 -0.5341794      0.0000000E+00
+   2.000000      0.0000000E+00  0.1009996      0.0000000E+00
+ wrote yhat and residual in file "yhat_residual"
+
+Final Estimates
+ Genetic variance(s) for effect  2       
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1139.4      0.20152      -457.87    
+   0.0000      0.20152      0.37304      -3.2268    
+   0.0000      -457.87      -3.2268       460.19    
+   correlations
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1.0000      0.97743E-02 -0.63231    
+   0.0000      0.97743E-02   1.0000     -0.24628    
+   0.0000     -0.63231     -0.24628       1.0000    
+   eigenvectors
+   1.0000       0.0000       0.0000       0.0000    
+   0.0000     -0.44074E-02  0.44956     -0.89324    
+   0.0000     -0.99993     -0.12169E-01 -0.11907E-02
+   0.0000     -0.11405E-01  0.89317      0.44958    
+  eigenvalues
+   0.0000      0.33712       229.77       1369.9    
+ Genetic variance(s) for effect  4       
+  0.50405E-01 -0.82836    
+ -0.82836       477.16    
+   correlations
+   1.0000     -0.16891    
+ -0.16891       1.0000    
+   eigenvectors
+  -1.0000     -0.17362E-02
+ -0.17362E-02   1.0000    
+  eigenvalues
+  0.48967E-01   477.16    
+ Residual variance(s)
+  0.51902     -0.19677    
+ -0.19677       1706.2    
+   correlations
+   1.0000     -0.66122E-02
+ -0.66122E-02   1.0000    
+   eigenvectors
+  -1.0000     -0.11536E-03
+ -0.11536E-03   1.0000    
+  eigenvalues
+  0.51900       1706.2    
+ inverse of AI matrix (Sampling Variance)
+   19624.      -2.0129      -9157.8     -0.16159E-02   1.7153       4163.3      0.22563E-04 -0.12816      -62.842      0.29358E-03   1.3373      -10014.    
+  -2.0129       2.6693      -9.9329     -0.77631E-03  -1.4001       10.972      0.50264E-03  0.10340      -1.1977      0.24427E-04 -0.14620E-01   1.4047    
+  -9157.8      -9.9329       8879.4     -0.99994E-03   3.8611      -6476.6      0.22767E-03  0.38343       188.01     -0.50526E-04 -0.69989       4716.3    
+ -0.16159E-02 -0.77631E-03 -0.99994E-03  0.10525E-02 -0.55845E-02  0.34448E-01 -0.43128E-03  0.18205E-02 -0.12251E-01 -0.76621E-05 -0.69153E-04 -0.13530E-03
+   1.7153      -1.4001       3.8611     -0.55845E-02   1.7862      -15.118      0.18056E-02 -0.59033       5.1785      0.18790E-04  0.98739E-02 -0.74504    
+   4163.3       10.972      -6476.6      0.34448E-01  -15.118       8213.2     -0.10762E-01   4.7592      -2043.7     -0.20203E-03  0.20526E-02  -2232.1    
+  0.22563E-04  0.50264E-03  0.22767E-03 -0.43128E-03  0.18056E-02 -0.10762E-01  0.40796E-03 -0.15600E-02  0.62348E-02 -0.86316E-04  0.24221E-03  0.92206E-04
+ -0.12816      0.10340      0.38343      0.18205E-02 -0.59033       4.7592     -0.15600E-02  0.76140      -4.6901      0.11342E-03 -0.18513      0.31671E-01
+  -62.842      -1.1977       188.01     -0.12251E-01   5.1785      -2043.7      0.62348E-02  -4.6901       3046.5     -0.11999E-03  0.26405      -652.11    
+  0.29358E-03  0.24427E-04 -0.50526E-04 -0.76621E-05  0.18790E-04 -0.20203E-03 -0.86316E-04  0.11342E-03 -0.11999E-03  0.17800E-03 -0.16422E-03 -0.11748E-03
+   1.3373     -0.14620E-01 -0.69989     -0.69153E-04  0.98739E-02  0.20526E-02  0.24221E-03 -0.18513      0.26405     -0.16422E-03  0.81250     -0.86126    
+  -10014.       1.4047       4716.3     -0.13530E-03 -0.74504      -2232.1      0.92206E-04  0.31671E-01  -652.11     -0.11748E-03 -0.86126       6925.5    
+ Correlations from inverse of AI matrix
+   1.0000     -0.87949E-02 -0.69375     -0.35555E-03  0.91617E-02  0.32793      0.79743E-05 -0.10484E-02 -0.81273E-02  0.15708E-03  0.10591E-01 -0.85901    
+ -0.87949E-02   1.0000     -0.64518E-01 -0.14646E-01 -0.64121      0.74102E-01  0.15232E-01  0.72527E-01 -0.13282E-01  0.11206E-02 -0.99275E-02  0.10331E-01
+ -0.69375     -0.64518E-01   1.0000     -0.32710E-03  0.30659E-01 -0.75840      0.11962E-03  0.46633E-02  0.36149E-01 -0.40190E-04 -0.82399E-02  0.60143    
+ -0.35555E-03 -0.14646E-01 -0.32710E-03   1.0000     -0.12880      0.11716E-01 -0.65818      0.64310E-01 -0.68417E-02 -0.17703E-01 -0.23648E-02 -0.50117E-04
+  0.91617E-02 -0.64121      0.30659E-01 -0.12880       1.0000     -0.12482      0.66886E-01 -0.50620      0.70200E-01  0.10538E-02  0.81961E-02 -0.66986E-02
+  0.32793      0.74102E-01 -0.75840      0.11716E-01 -0.12482       1.0000     -0.58793E-02  0.60182E-01 -0.40856     -0.16709E-03  0.25126E-04 -0.29596    
+  0.79743E-05  0.15232E-01  0.11962E-03 -0.65818      0.66886E-01 -0.58793E-02   1.0000     -0.88516E-01  0.55926E-02 -0.32031      0.13304E-01  0.54856E-04
+ -0.10484E-02  0.72527E-01  0.46633E-02  0.64310E-01 -0.50620      0.60182E-01 -0.88516E-01   1.0000     -0.97382E-01  0.97423E-02 -0.23537      0.43615E-03
+ -0.81273E-02 -0.13282E-01  0.36149E-01 -0.68417E-02  0.70200E-01 -0.40856      0.55926E-02 -0.97382E-01   1.0000     -0.16294E-03  0.53073E-02 -0.14197    
+  0.15708E-03  0.11206E-02 -0.40190E-04 -0.17703E-01  0.10538E-02 -0.16709E-03 -0.32031      0.97423E-02 -0.16294E-03   1.0000     -0.13655E-01 -0.10581E-03
+  0.10591E-01 -0.99275E-02 -0.82399E-02 -0.23648E-02  0.81961E-02  0.25126E-04  0.13304E-01 -0.23537      0.53073E-02 -0.13655E-01   1.0000     -0.11481E-01
+ -0.85901      0.10331E-01  0.60143     -0.50117E-04 -0.66986E-02 -0.29596      0.54856E-04  0.43615E-03 -0.14197     -0.10581E-03 -0.11481E-01   1.0000    
+ SE for G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       140.09       1.6338       94.231    
+   0.0000       1.6338      0.32442E-01   1.3365    
+   0.0000       94.231       1.3365       90.627    
+ SE for G
+  0.20198E-01  0.87258    
+  0.87258       55.195    
+ SE for R
+  0.13342E-01  0.90139    
+  0.90139       83.219    
+  
+ Sampling variances of covariances function of random effects (n=1000000)
+  
+hmwm  - Function: g_3_3_1_2/(g_3_3_1_1*g_3_3_2_2)^0.5
+  Mean:  -0.24628    
+  Sample Mean:  -0.24897    
+  Sample SD:   0.10394    
+  
+wmwd  - Function: g_2_3_2_2/(g_2_2_2_2*g_3_3_2_2)^0.5
+  Mean:  -0.63231    
+  Sample Mean:  -0.63120    
+  Sample SD:   0.70591E-01
+  
+wdhm  - Function: g_2_3_2_1/(g_2_2_2_2*g_3_3_1_1)^0.5
+  Mean:   0.97743E-02
+  Sample Mean:   0.99892E-02
+  Sample SD:   0.80281E-01
+ elapsed time   1.708984    
+ * FINISHED (AIREMLF90): 08-25-2020  20h 10m 10s 145

@@ -41,3 +41,4 @@ OPTION conv_crit 1e-12
 OPTION use_yams
 OPTION sex_chr 30
 OPTION excludeCHR
+OPTION se_covar_function

@@ -99,7 +99,7 @@ write_delim(yes_dat %>%
             col_names = FALSE)
 
 ## -------------------------------------------------------------------------------
-## Only from calves whose dams grazed fescue + their contemporaries
+## Only from calves whose dams did not graze fescue + their contemporaries
 wean_no <-
   hair_weights %>%
   # Create a list of CGs containing dams with hair scores or their calves
@@ -156,20 +156,75 @@ write_delim(no_dat %>%
             delim = " ",
             col_names = FALSE)
 
+## -------------------------------------------------------------------------------
+## Only from calves whose dams did not graze fescue or fescue was na + their contemporaries
+wean_no_na <-
+  hair_weights %>%
+  # Create a list of CGs containing dams with hair scores or their calves
+  # filter(dam_reg %in% start[start$toxic_fescue == "YES",]$full_reg | full_reg %in% start[start$toxic_fescue == "YES",]$full_reg) %>%
+  filter(!dam_reg %in% start[start$toxic_fescue == "YES",]$full_reg) %>%
+  filter(trait == "ww") %>%
+  group_by(cg_num) %>%
+  # Drop WW CGs with fewer than 5 animals
+  filter(n() >= 5) %>%
+  ungroup() %>%
+  distinct(cg_num) %>%
+  # Re-join data for animals in remaining CGs
+  left_join(hair_weights %>%
+              filter(trait == "ww")) %>%
+  distinct()
+
+
+
+## -------------------------------------------------------------------------------
+no_na_dat <-
+  start %>%
+  filter(toxic_fescue != "YES") %>%
+  select(dam_reg = full_reg, hair_cg = cg_num, hair_score, year) %>%
+  full_join(
+    wean_no_na %>%
+      # Join by hair shedding scoring year of dam, weaning year of calf
+      mutate(year = lubridate::year(weigh_date)) %>%
+      select(full_reg, dam_reg, ww_cg = cg_num, adj_weight, year),
+    by = c("dam_reg", "year")
+  ) %>%
+  rownames_to_column(var = "rowname") %>%
+  # FDC for fake dummy calf
+  mutate(
+    full_reg =
+      case_when(
+        is.na(full_reg) ~ as.character(glue("FDC{rowname}_no_na")),
+        TRUE ~ full_reg)
+  ) %>%
+  select(full_reg, dam_reg, hair_cg, ww_cg, hair_score, adj_weight) %>%
+  mutate_all(~ replace_na(., "0"))
+
+
+## -------------------------------------------------------------------------------
+write_delim(no_na_dat %>%
+              select(-dam_reg),
+            path = here::here(glue("data/derived_data/ww_fescue/model3_no_na/data.txt")),
+            delim = " ",
+            col_names = FALSE)
+
+write_delim(no_na_dat %>% 
+              select(full_reg, ww_cg, adj_weight) %>% 
+              filter(!str_detect(full_reg, "^FDC")),
+            path = here::here(glue("data/derived_data/ww_fescue/model3_no_na_ww/data.txt")),
+            delim = " ",
+            col_names = FALSE)
 
 ## -------------------------------------------------------------------------------
 
 fdc_dummy_ped <-
-  bind_rows(no_dat, yes_dat) %>%
+  bind_rows(no_dat, yes_dat, no_na_dat) %>%
   filter(str_detect(full_reg, "^FDC")) %>%
   mutate(sire_reg = "0") %>%
   select(full_reg, sire_reg, dam_reg) %>%
   bind_rows(hair_ped)
 
 
-
-
-## -------------------------------------------------------------------------------
+## PEDIGREE - YES -------------------------------------------------------------------------------
 yes_ped <-
   yes_dat %>%
   select(full_reg) %>%
@@ -210,7 +265,7 @@ purrr::map(
 )
 
 
-## -------------------------------------------------------------------------------
+## PEDIGREE - NO -------------------------------------------------------------------------------
 no_ped <-
   no_dat %>%
   select(full_reg) %>%
@@ -226,7 +281,46 @@ no_ped <-
 purrr::map(
   .x = c("data/derived_data/ww_fescue/model3_no_ww/ped.txt", "data/derived_data/ww_fescue/model3_no/ped.txt"),
   ~ write_delim(
-    yes_ped,
+    no_ped,
+    path = .x,
+    delim = " ",
+    col_names = FALSE
+  )
+)
+
+## -------------------------------------------------------------------------------
+
+purrr::map(
+  .x = c("data/derived_data/ww_fescue/model3_no_ww/pull_list.txt", "data/derived_data/ww_fescue/model3_no/pull_list.txt"),
+  ~ write_delim(
+    no_ped %>%
+      select(full_reg) %>%
+      filter(full_reg %in% genotyped) %>%
+      distinct(),
+    path = .x,
+    delim = " ",
+    col_names = FALSE
+  )
+)
+
+
+  ## PEDIGREE - NO/NA -------------------------------------------------------------------------------
+no_na_ped <-
+  no_na_dat %>%
+  select(full_reg) %>%
+  distinct() %>%
+  left_join(
+    fdc_dummy_ped %>%
+      select(full_reg, sire_reg, dam_reg)
+  ) %>%
+  # Three generation pedigree
+  three_gen(full_ped = fdc_dummy_ped) %>%
+  mutate_all(~ replace_na(., "0"))
+
+purrr::map(
+  .x = c("data/derived_data/ww_fescue/model3_no_na_ww/ped.txt", "data/derived_data/ww_fescue/model3_no_na/ped.txt"),
+  ~ write_delim(
+    no_na_ped,
     path = .x,
     delim = " ",
     col_names = FALSE
@@ -238,9 +332,9 @@ purrr::map(
 ## -------------------------------------------------------------------------------
 
 purrr::map(
-  .x = c("data/derived_data/ww_fescue/model3_no_ww/pull_list.txt", "data/derived_data/ww_fescue/model3_no/pull_list.txt"),
+  .x = c("data/derived_data/ww_fescue/model3_no_na_ww/pull_list.txt", "data/derived_data/ww_fescue/model3_no_na/pull_list.txt"),
   ~ write_delim(
-    yes_ped %>%
+    no_na_ped %>%
       select(full_reg) %>%
       filter(full_reg %in% genotyped) %>%
       distinct(),

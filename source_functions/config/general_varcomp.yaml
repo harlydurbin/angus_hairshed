@@ -1,6 +1,6 @@
 aireml_path: "~/bin/airemlf90"
 
-model: ["normal", "collapsed"]
+model: ["normal"]
 
 renumf90_path: "~/bin/renumf90"
 

@@ -48,3 +48,9 @@ OPTION sex_chr 30
 OPTION excludeCHR
 OPTION fact_one file
 OPTION EM-REML 10
+# G_eff1_eff2_trt1_trt2
+# where eff1 and eff2 are effect numbers 1 and 2, and trt1 and trt2 are trait numbers 1 and 2.
+OPTION se_covar_function hmwm G_3_3_1_2/(G_3_3_1_1*G_3_3_2_2)**0.5
+OPTION se_covar_function wmwd G_2_3_2_2/(G_2_2_2_2*G_3_3_2_2)**0.5
+OPTION se_covar_function wdhm G_2_3_2_1/(G_2_2_2_2*G_3_3_1_1)**0.5
+OPTION samples_se_covar_function 1000000

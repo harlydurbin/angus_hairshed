@@ -1,5 +1,5 @@
 
-#nohup snakemake -s source_functions/ww_fescue.snakefile --latency-wait 30 --jobs 10 --config --resources load=100 --until &> log/snakemake_log/200410.ww_fescue.log &
+#nohup snakemake -s source_functions/ww_fescue.snakefile --latency-wait 30 --jobs 10 --config --resources load=100 &> log/snakemake_log/200827.ww_fescue.log &
 
 #export LD_LIBRARY_PATH=/home/agiintern/.conda/envs/regionsenv/lib
 
@@ -31,23 +31,24 @@ rule ww_fescue_start:
         load = 1
     input:
         start = "data/derived_data/start.rds",
-        genotyped_id = "data/derived_data/genotyped_id.txt"
+        genotyped_id = "data/derived_data/genotyped_id.txt",
+        script = "source_functions/ww_fescue_start.R"
     output:
         ped = expand("data/derived_data/ww_fescue/{model}/ped.txt", model = config['model']),
         data = expand("data/derived_data/ww_fescue/{model}/data.txt", model = config['model']),
         pull_list = expand("data/derived_data/ww_fescue/{model}/pull_list.txt", model = config['model'])
     shell:
         """
-        Rscript --vanilla source_functions/ww_fescue_start.R &> log/rule_log/ww_fescue_start/ww_fescue_start.log
+        Rscript --vanilla {input.script} &> log/rule_log/ww_fescue_start/ww_fescue_start.log
         """
 
 rule copy_par:
     resources:
         load = 1
     input:
-        par = "source_functions/par/ww_fescue_univariate.par"
+        par = "source_functions/par/ww_fescue.par"
     output:
-        par = "data/derived_data/ww_fescue/{model}/ww_fescue_univariate.par"
+        par = "data/derived_data/ww_fescue/{model}/ww_fescue.par"
     shell:
         "cp {input.par} {output.par}"
 
@@ -69,14 +70,14 @@ rule renumf90:
     resources:
         load = 1
     input:
-        input_par = "data/derived_data/ww_fescue/{model}/ww_fescue_univariate.par",
+        input_par = "data/derived_data/ww_fescue/{model}/ww_fescue.par",
         reduced_geno = "data/derived_data/ww_fescue/{model}/genotypes.txt",
         datafile = "data/derived_data/ww_fescue/{model}/data.txt",
         pedfile = "data/derived_data/ww_fescue/{model}/ped.txt",
         format_map = "data/derived_data/chrinfo.imputed_hair.txt"
     params:
         dir = "data/derived_data/ww_fescue/{model}",
-        par = "ww_fescue_univariate.par",
+        par = "ww_fescue.par",
         renf90_out = "renf90.{model}.out",
         renumf90_path = config['renumf90_path']
     output:
@@ -87,27 +88,27 @@ rule renumf90:
         {params.renumf90_path} {params.par} &> {params.renf90_out}
         """
 # Have to manually edit two par files
-# rule edit_renumf90:
-#     resources:
-#         load = 1
-#     input:
-#         renf90 = "data/derived_data/ww_fescue/{model}/renf90.par"
-#     output:
-#         yeet = "data/derived_data/ww_fescue/{model}/yeet.txt"
-#         # Replace effects for model 1 & model 3 par
-#     shell:
-#         """
-#         sed -i '14s/5 5/0 5/' {input.renf90}
-#         touch {output.yeet}
-#         """
+rule edit_renumf90:
+    resources:
+        load = 1
+    input:
+        renf90 = "data/derived_data/ww_fescue/{model}/renf90.par"
+    output:
+        yeet = "data/derived_data/ww_fescue/{model}/yeet.txt"
+        # Replace effects for model 1 & model 3 par
+    shell:
+        """
+        sed -i '14s/5 5/0 5/' {input.renf90}
+        touch {output.yeet}
+        """
 rule airemlf90:
     resources:
-        load = 100
+        load = 50
     input:
         renf90_par = "data/derived_data/ww_fescue/{model}/renf90.par",
         format_map = "data/derived_data/chrinfo.imputed_hair.txt",
-        moved_geno = "data/derived_data/ww_fescue/{model}/genotypes.txt"
-        #yeet = "data/derived_data/ww_fescue/{model}/yeet.txt"
+        moved_geno = "data/derived_data/ww_fescue/{model}/genotypes.txt",
+        yeet = "data/derived_data/ww_fescue/{model}/yeet.txt"
     params:
         dir = "data/derived_data/ww_fescue/{model}",
         aireml_out_name = "aireml.{model}.out",

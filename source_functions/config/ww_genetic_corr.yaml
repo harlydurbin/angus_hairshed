@@ -2,6 +2,6 @@ aireml_path: "~/bin/airemlf90"
 
 renumf90_path: "~/bin/renumf90"
 
-model: ["model1", "model2", "model3"]
+model: ["model3"]
 
 master_geno: "data/derived_data/genotypes.imputed_hair.txt"

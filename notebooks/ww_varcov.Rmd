@@ -62,6 +62,10 @@ prettygen <- function(model, dataset = "all") {
     glue::glue(
       "data/derived_data/ww_fescue/model{model}_no/airemlf90.model{model}_no.log"
     )
+  } else if (dataset == "fescue_no_na") {
+    glue::glue(
+      "data/derived_data/ww_fescue/model{model}_no_na/airemlf90.model{model}_no_na.log"
+    )
   } else if (dataset == "ww_no") {
     glue::glue(
       "data/derived_data/ww_fescue/model{model}_no_ww/airemlf90.model{model}_no_ww.log"
@@ -70,7 +74,11 @@ prettygen <- function(model, dataset = "all") {
     glue::glue(
       "data/derived_data/ww_fescue/model{model}_yes_ww/airemlf90.model{model}_yes_ww.log"
     )
-  } 
+  } else if (dataset == "ww_no_na") {
+    glue::glue(
+      "data/derived_data/ww_fescue/model{model}_no_na_ww/airemlf90.model{model}_no_na_ww.log"
+    )
+  }
   
   read_table2(
     here::here(path),
@@ -127,18 +135,18 @@ read_table2(here::here("data/derived_data/ww_genetic_corr/single_step/model1/dat
 ```
 
 
-```{r, cols.print = 6}
+```{r, cols.print = 6, eval=FALSE}
 prettygen(model = 1)
 ```
 
 ## Model 2 (all effects, weaning weight as trait of the dam) 
 
-```{r, cols.print = 6}
+```{r, cols.print = 6, eval=FALSE}
 prettygen(model = 2)
 ```
 
 
-## Model 3 ($HS_{calf}$ fixed to zero, weaning weight as trait of the dam) 
+## Model 3 ($HS_{calf}$ fixed to zero, weaning weight as trait of the dam) {.tabset}
 
 > Sample of data: relationship is between calf's weaning weight and its dam's hair score
 
@@ -180,39 +188,6 @@ read_table2(
 
 ```
 
-
-### Toxic fescue = NO
-
-```{r}
-prettygen(model = 3, dataset = "fescue_no")
-```
-
-#### For comparison, toxic fescue = NO weaning weight only
-
-```{r}
-read_table2(
-  here::here("data/derived_data/ww_fescue/model3_no_ww/airemlf90.model3_no_ww.log"),
-  skip = 7,
-  n_max = 2,
-  col_names = c(
-    glue("Weaing weight (direct)"),
-    glue("Weaning weight (milk)")
-  )
-) %>%
-  mutate(rowname = colnames(.)) %>%
-  column_to_rownames(var = "rowname") %>%
-  DT::datatable(
-    filter = 'none',
-    extensions = list('FixedColumns', 'RowReorder'),
-    options = list(
-      fixedColumns = list(leftColumns = 1),
-      rowReorder = FALSE
-    )
-  )
-
-```
-
-
 ### Toxic fescue = YES
 
 ```{r}
@@ -244,11 +219,44 @@ read_table2(
 
 ```
 
+
+### Toxic fescue = NO
+
+```{r}
+prettygen(model = 3, dataset = "fescue_no")
+```
+
+#### For comparison, toxic fescue = NO weaning weight only
+
+```{r, eval=FALSE}
+read_table2(
+  here::here("data/derived_data/ww_fescue/model3_no_ww/airemlf90.model3_no_ww.log"),
+  skip = 7,
+  n_max = 2,
+  col_names = c(
+    glue("Weaing weight (direct)"),
+    glue("Weaning weight (milk)")
+  )
+) %>%
+  mutate(rowname = colnames(.)) %>%
+  column_to_rownames(var = "rowname") %>%
+  DT::datatable(
+    filter = 'none',
+    extensions = list('FixedColumns', 'RowReorder'),
+    options = list(
+      fixedColumns = list(leftColumns = 1),
+      rowReorder = FALSE
+    )
+  )
+
+```
+
+
 # Variance components, heritability, and repeatability
 
 ## Model 1 (no maternal effect of hair shedding, weaning weight as trait of the calf) 
 
-```{r}
+```{r, eval=FALSE}
 varcov1 <-
   melt_aireml(
   path = here::here("data/derived_data/ww_genetic_corr/single_step/model1/airemlf90.model1.log"),
@@ -259,11 +267,11 @@ varcov1 <-
 )
 ```
 
-```{r, cols.print = 6}
+```{r, cols.print = 6, eval=FALSE}
 prettyvar(varcovdf = varcov1)
 ```
 
-```{r}
+```{r, eval=FALSE}
 herit1 <-
   varcov1 %>% 
   biv_heritability(
@@ -275,14 +283,14 @@ herit1 <-
   )
 ```
 
-```{r}
+```{r, eval=FALSE}
 herit1 %>% 
   rename(Trait = key) 
 ```
 
 ## Model 2 (all effects, weaning weight as trait of the dam) 
 
-```{r}
+```{r, eval=FALSE}
 
 varcov2 <-
 melt_aireml(
@@ -293,13 +301,11 @@ melt_aireml(
 ) 
 ```
 
-
-
-```{r, cols.print = 6}
+```{r, cols.print = 6, eval=FALSE}
 prettyvar(varcovdf = varcov2)
 ```
 
-```{r}
+```{r, eval=FALSE}
 herit2 <-
   varcov2 %>% 
   biv_heritability(
@@ -310,13 +316,13 @@ herit2 <-
   )
 ```
 
-```{r}
+```{r, eval=FALSE}
 herit2 %>% 
   rename(Trait = key)
 ```
 
 
-## Model 3 ($HS_{calf}$ fixed to zero, weaning weight as trait of the dam) 
+## Model 3 ($HS_{calf}$ fixed to zero, weaning weight as trait of the dam) {.tabset}
 
 ### All possible data
 
@@ -348,71 +354,6 @@ herit3 <-
 
 ```{r}
 herit3 %>% 
-  rename(Trait = key) 
-```
-
-### Toxic fescue = NO
-
-```{r}
-varcov3_no <-
-melt_aireml(
-  path = here::here("data/derived_data/ww_fescue/model3_no/airemlf90.model3_no.log"),
-  effect2 = c("hair_dir", "ww_dir", "hair_mat", "ww_mat"),
-  effect4 = c("hair_mpe", "ww_mpe"),
-  resids = c("hair_res", "ww_res")
-)
-```
-
-
-```{r, cols.print = 6}
-prettyvar(varcovdf = varcov3_no)
-```
-
-```{r}
-herit3_no <-
-  varcov3_no %>% 
-  biv_heritability(
-    abbrvs = c("hair", "ww"),
-    descs = c("Hair shedding", "Weaning weight"),
-    mat = TRUE,
-    mpe = TRUE
-  )
-```
-
-```{r}
-herit3_no %>% 
-  rename(Trait = key) 
-```
-
-#### For comparison, toxic fescue = NO weaning weight only
-
-```{r}
-varcov3_no_ww <-
-melt_aireml(
-  path = here::here("data/derived_data/ww_fescue/model3_no_ww/airemlf90.model3_no_ww.log"),
-  effect2 = c("ww_dir", "ww_mat"),
-  effect4 = c("ww_mpe"),
-  resids = c("ww_res")
-)
-```
-
-```{r, cols.print = 6}
-prettyvar(varcovdf = varcov3_no_ww)
-```
-
-```{r}
-herit3_no_ww <-
-  varcov3_no_ww %>% 
-  univ_heritability(
-    abbrv = c("ww"),
-    desc = c("Weaning weight"),
-    mat = TRUE,
-    mpe = TRUE
-  )
-```
-
-```{r}
-herit3_no_ww %>% 
   rename(Trait = key) 
 ```
 
@@ -479,6 +420,72 @@ herit3_yes_ww <-
 herit3_yes_ww %>% 
   rename(Trait = key) 
 ```
+
+### Toxic fescue = NO
+
+```{r}
+varcov3_no <-
+melt_aireml(
+  path = here::here("data/derived_data/ww_fescue/model3_no/airemlf90.model3_no.log"),
+  effect2 = c("hair_dir", "ww_dir", "hair_mat", "ww_mat"),
+  effect4 = c("hair_mpe", "ww_mpe"),
+  resids = c("hair_res", "ww_res")
+)
+```
+
+
+```{r, cols.print = 6}
+prettyvar(varcovdf = varcov3_no)
+```
+
+```{r}
+herit3_no <-
+  varcov3_no %>% 
+  biv_heritability(
+    abbrvs = c("hair", "ww"),
+    descs = c("Hair shedding", "Weaning weight"),
+    mat = TRUE,
+    mpe = TRUE
+  )
+```
+
+```{r}
+herit3_no %>% 
+  rename(Trait = key) 
+```
+
+#### For comparison, toxic fescue = NO weaning weight only
+
+```{r, eval=FALSE}
+varcov3_no_ww <-
+melt_aireml(
+  path = here::here("data/derived_data/ww_fescue/model3_no_ww/airemlf90.model3_no_ww.log"),
+  effect2 = c("ww_dir", "ww_mat"),
+  effect4 = c("ww_mpe"),
+  resids = c("ww_res")
+)
+```
+
+```{r, cols.print = 6, eval=FALSE}
+prettyvar(varcovdf = varcov3_no_ww)
+```
+
+```{r, eval=FALSE}
+herit3_no_ww <-
+  varcov3_no_ww %>% 
+  univ_heritability(
+    abbrv = c("ww"),
+    desc = c("Weaning weight"),
+    mat = TRUE,
+    mpe = TRUE
+  )
+```
+
+```{r, eval=FALSE}
+herit3_no_ww %>% 
+  rename(Trait = key) 
+```
+
 # Likelihood ratio test
 
 * Test for model fit between including vs. excluding calf effect on hair shedding
@@ -542,21 +549,7 @@ Where:
 
 ---
 
-Hair shedding score heritability estimates were similar for all models, ranging from `r min(as.numeric(herit1[1,3]), as.numeric(herit2[1,4]), as.numeric(herit3[1,4]))` to `r max(as.numeric(herit1[1,3]), as.numeric(herit2[1,4]), as.numeric(herit3[1,4]))`.  
-
-
 Models 2 and 3 created a direct tie between a dam's hair shedding score and the calf she weaned that year.  
 
 ---
-
-The effects fit in model 2 were:  
-
-* $HS_{calf}$
-* $WW_{calf}$
-* $WW_{maternal}$
-* $HS_{maternal}$
-* $WW_{MPE}$
-* $HS_{PE}$
-
-and their covariances. A residual covariance was fit between hair shedding and weaning weight.
 
