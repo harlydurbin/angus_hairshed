@@ -1,0 +1,497 @@
+ * START JOB (AIREMLF90): 08-25-2020  14h 58m 56s 648
+
+renf90.par
+     AI-REMLF90 ver. 1.135
+
+ Parameter file:             renf90.par
+ Data file:                  renf90.dat
+ Number of Traits             2
+ Number of Effects            4
+ Position of Observations      1  2
+ Position of Weight (1)        0
+ Value of Missing Trait/Observation           0
+
+EFFECTS
+ #  type                position (2)        levels   [positions for nested]
+    1  cross-classified       3    4                                            1288
+    2  cross-classified       0    5                                           66020
+    3  cross-classified       6    6                                           66020
+    4  cross-classified       6    6                                           66020
+
+ Residual (co)variance Matrix
+ 0.53284     0.81747    
+ 0.81747      1997.4    
+
+ correlated random effects     2  3
+ Type of Random Effect:      additive animal with unknown parent groups and inbreeding
+ Pedigree File:              renadd02.ped                                                                                                                                                                                                                                              
+ trait   effect    (CO)VARIANCES
+  1       2     0.000       0.000       0.000       0.000    
+  2       2     0.000       1152.     -0.7091      -308.0    
+  1       3     0.000     -0.7091      0.3727      -2.421    
+  2       3     0.000      -308.0      -2.421       450.8    
+
+ Random Effect(s)    4
+ Type of Random Effect:      diagonal
+ trait   effect    (CO)VARIANCES
+  1       4    0.4141E-01 -0.7325    
+  2       4   -0.7325       449.0    
+
+ REMARKS
+  (1) Weight position 0 means no weights utilized
+  (2) Effect positions of 0 for some effects and traits means that such
+      effects are missing for specified traits
+ 
+ * convergence criterion (default=1e-12):  1.000000000000000E-012
+ # EM-REML iterations (default=0):          10
+ *** store solutions and s.e. *** se                  
+ * yhat and residual will be shown in yhat_residual
+ * sparse package: YAMS
+* SE for function of (co)variances hmwm G_3_3_1_2/(G_3_3_1_1*G_3_3_2_2)**0.5
+* SE for function of (co)variances wmwd G_2_3_2_2/(G_2_2_2_2*G_3_3_2_2)**0.5
+* SE for function of (co)variances wdhm G_2_3_2_1/(G_2_2_2_2*G_3_3_1_1)**0.5
+ *** number of samples to calculate SE for function of (co)variances*** 
+     1000000
+ 
+
+Options read from parameter file:
+
+ * SNP file: genotypes.txt
+ * SNP Xref file: genotypes.txt_XrefID
+ * Map file: ../../../chrinfo.imputed_hair.txt
+ * Use only SNP with allele freq > minfreq (default minfreq = 0.05):   0.00
+ * Sex Chromosome (default 0)  30
+ * use YAMS package for sparse computation (default=.false.)
+ Data record length =            6
+ # free parameters=          12
+ # parameters=          17
+ # random effects=           3
+ # elements for random effects=           9
+ # maximum (ntrait*random)**2=          16
+ # (co)variance matrices=           2
+hash matrix increased from            8192 to           16384 % filled:     0.8000
+hash matrix increased from           16384 to           32768 % filled:     0.8000
+hash matrix increased from           32768 to           65536 % filled:     0.8000
+hash matrix increased from           65536 to          131072 % filled:     0.8000
+hash matrix increased from          131072 to          262144 % filled:     0.8000
+hash matrix increased from          262144 to          524288 % filled:     0.8000
+hash matrix increased from          524288 to         1048576 % filled:     0.8000
+ read        45758  records in   0.9760600      s,                  814315 
+  nonzeroes
+hash matrix increased from         1048576 to         2097152 % filled:     0.8000
+hash matrix increased from            8192 to           16384 % filled:     0.8000
+hash matrix increased from           16384 to           32768 % filled:     0.8000
+hash matrix increased from           32768 to           65536 % filled:     0.8000
+hash matrix increased from           65536 to          131072 % filled:     0.8000
+hash matrix increased from          131072 to          262144 % filled:     0.8000
+hash matrix increased from         2097152 to         4194304 % filled:     0.8000
+hash matrix increased from          262144 to          524288 % filled:     0.8000
+  read        66020  additive pedigrees
+ 
+ *--------------------------------------------------------------*
+ *                 Genomic Library: Dist Version 1.239          *
+ *                                                              *
+ *             Optimized OpenMP Version - 72 threads            *
+ *                                                              *
+ *  Modified relationship matrix (H) created for effect:   2    *
+ *--------------------------------------------------------------*
+ 
+ Read 66020 animals from pedigree file: "renadd02.ped"
+ Number of Genotyped Animals: 3825
+
+ Creating A22 
+    Extracting subset of: 7773 pedigrees from: 66020 elapsed time:     0.6829
+    Calculating A22 Matrix by Colleau OpenMP...elapsed time: .0477
+    Numbers of threads=36 72
+
+ Reading SNP file
+    Column position in file for the first marker: 22
+    Format to read SNP file: (21x,400000i1)                                    
+    Number of SNPs: 233246
+    Format: integer genotypes (0 to 5) to double-precision array
+    Number of Genotyped animals: 3825
+    Reading SNP file elapsed time: 40.98
+ 
+ Statistics of alleles frequencies in the current population
+    N:         233246
+    Mean:       0.495
+    Min:        0.000
+    Max:        1.000
+    Var:        0.161
+
+ Reading MAP file: "../../../chrinfo.imputed_hair.txt" - 233246 SNPs out of 233246
+
+    Min and max # of chromosome: 1 29
+
+    Min and max # of SNP: 1 233246
+ 
+ Quality Control - SNPs with Call Rate < callrate ( 0.90) will removed: 0
+ 
+ Quality Control - SNPs with MAF < minfreq ( 0.00) will removed: 58101
+ 
+ Quality Control - Monomorphic SNPs will be removed: 58101
+
+ Quality Control - Removed Animals with Call rate < callrate ( 0.90): 0
+
+ Quality Control - Check Parent-Progeny Mendelian conflicts
+
+    Total animals: 66020 - Genotyped animals: 3825 - Effective: 3825
+
+    Number of pairs Individual - Sire: 316
+    Number of pairs Individual - Dam: 1751
+    Number of trios Individual - Sire - Dam: 196
+
+    SNPs from sex chr were MASKED for checks on Parentage conflicts or HWE: 0
+    SNPs from sex chr with no flags: 0
+
+ Checking SNPs for Mendelian conflicts
+
+    Total number of effective SNP: 175145
+    Total number of parent-progeny evaluations: 2067
+    Number of SNPs with Mendelian conflicts: 0
+
+ Checking Animals for Mendelian conflicts
+
+    Total number of effective SNP for checks on Animals: 175145
+
+    Number of Parent-Progeny Mendelian Conflicts: 47
+    Output stored in "Gen_conflicts"
+  
+    ****************************************************************
+    **      ALL PROGENY with conflicts will be removed !!!!       **
+    **                                                            **
+    **     Use seekparentf90 program to correct conflicts !!      **
+    ****************************************************************
+
+    SNPs from sex chr were UNMASKED for checks on Parentage conflicts or HWE: 0
+    SNPs from sex chr with no flags: 0
+
+ Number of effective SNPs (after QC): 175145
+
+ Number of effective Indiviuals (after QC): 3779
+ 
+ Statistics of alleles frequencies in the current population after
+ Quality Control (MAF, monomorphic, call rate, HWE, Mendelian conflicts)
+    N:         175145
+    Mean:       0.520
+    Min:        0.000
+    Max:        1.000
+    Var:        0.131
+
+ Number of Animals to be excluded from analysis: 58101
+
+    For calulations in the current analysis number
+    of genotyped animals are the same but:
+
+       Diagonals of G and A22 are set to 1
+       Off-Diagonals of G and A22 are set to 0
+
+ List of Animals removed in: "genotypes.txt_Animals_removed"
+
+ List of SNPs removed in: "genotypes.txt_SNPs_removed"
+
+ Clean genotype file was created: "genotypes.txt_clean"
+
+ Cross reference ID file was created: "genotypes.txt_clean_XrefID"
+
+ Genotypes missings (%): 24.910
+
+ Genotypes missings after cleannig (%):  0.000
+
+ Calculating G Matrix 
+    Dgemm MKL #threads=    36   72 Elapsed omp_get_time:    14.0598
+ 
+ Scale by Sum(2pq). Average:   41583.4562998172     
+
+ Detecting samples with similar genotypes
+    elapsed time=     0.1
+
+ *****************************************
+ *  Possible genotype duplicates samples *
+ *****************************************
+
+    i-j number of sample , i-j renumber Id, G(i,j), G(i,i), G(j,j), r(i,j) 
+        2349    2348   46686   46685  1.0168  1.0196  1.0179  0.9981
+        3355    3354   46897   46896  0.8665  0.9312  0.9404  0.9259
+    elapsed time=     0.0
+ 
+ Blend G as alpha*G + beta*A22: (alpha,beta)     0.950     0.050
+
+ Frequency - Diagonal of G
+    N:        3779
+    Mean:        1.006
+    Min:         0.769
+    Max:         1.376
+    Range:       0.030
+    Class:     20
+ 
+  #Class       Class   Count
+       1  0.7688           1
+       2  0.7992           1
+       3  0.8295           0
+       4  0.8599           4
+       5  0.8903           5
+       6  0.9206         141
+       7  0.9510         872
+       8  0.9814        1309
+       9   1.012         849
+      10   1.042         368
+      11   1.072         126
+      12   1.103          70
+      13   1.133          20
+      14   1.164           3
+      15   1.194           5
+      16   1.224           2
+      17   1.255           0
+      18   1.285           1
+      19   1.315           0
+      20   1.346           2
+      21   1.376           0
+ 
+
+ Check for diagonal of genomic relationship matrix
+
+
+ Check for diagonal of genomic relationship matrix, genotypes not removed: 0
+
+ ------------------------------
+  Final Pedigree-Based Matrix 
+ ------------------------------
+ 
+ Statistic of Rel. Matrix A22
+                            N      Mean       Min       Max       Var
+     Diagonal            3825     1.006     1.000     1.258     0.000
+     Off-diagonal    14626800     0.008     0.000     0.781     0.001
+ 
+
+ ----------------------
+  Final Genomic Matrix 
+ ----------------------
+ 
+ Statistic of Genomic Matrix
+                            N      Mean       Min       Max       Var
+     Diagonal            3825     1.006     0.769     1.376     0.002
+     Off-diagonal    14626800     0.008    -0.107     0.992     0.001
+ 
+
+ Correlation of Genomic Inbreeding and Pedigree Inbreeding
+     Correlation:     0.4496
+ 
+ All elements - Diagonal / Off-Diagonal
+    Estimating Regression Coefficients G = b0 11' + b1 A + e
+    Regression coefficients b0 b1 =      0.000     0.959
+
+    Correlation all elements G & A     0.765
+ 
+ Off-Diagonal
+    Using 1430706 elements from A22 >= .02000
+
+    Estimating Regression Coefficients G = b0 11' + b1 A + e
+    Regression coefficients b0 b1 =     -0.003     0.973
+
+    Correlation Off-Diagonal elements G & A     0.844
+ 
+
+ Creating A22-inverse 
+    Inverse LAPACK MKL dpotrf/i  #threads=   36   72 Elapsed omp_get_time:     0.4620
+
+ ----------------------
+  Final A22 Inv Matrix 
+ ----------------------
+ 
+ Statistic of Inv. Rel. Matrix A22
+                            N      Mean       Min       Max       Var
+     Diagonal            3825     1.814     1.000    32.025     0.667
+     Off-diagonal    14626800    -0.000    -1.168     1.045     0.000
+ 
+ 
+ Creating G-inverse 
+    Inverse LAPACK MKL dpotrf/i  #threads=   36   72 Elapsed omp_get_time:     0.3460
+
+ --------------------------
+  Final Genomic Inv Matrix 
+ --------------------------
+ 
+ Statistic of Inv. Genomic Matrix
+                            N      Mean       Min       Max       Var
+     Diagonal            3825     3.936     0.984    52.602     2.182
+     Off-diagonal    14626800    -0.001   -17.801     2.451     0.003
+ 
+
+ Check for diagonal of Inverse Genomic - Inverse of pedigree relationship matrix
+
+ Number of genotypes with G^ii < A22^ii: 3
+ Genotype number, renumber id and Gi-A22i print in file: "Check_Diagonal_GimA22i"
+
+ ------------------------------
+  Final G Inv - A22 Inv Matrix 
+ ------------------------------
+ 
+ Statistic of Inv. Genomic- A22 Matrix
+                            N      Mean       Min       Max       Var
+     Diagonal            3825     2.123    -0.336    20.577     0.684
+     Off-diagonal    14626800    -0.001   -17.801     1.450     0.002
+ 
+
+*--------------------------------------------------*
+* Setup Genomic Done !!!, elapsed time:    111.948 *
+*--------------------------------------------------*
+
+ wGimA22i   1.00000000000000     
+hash matrix increased from          524288 to         1048576 % filled:     0.8000
+hash matrix increased from         1048576 to         2097152 % filled:     0.8000
+hash matrix increased from         2097152 to         4194304 % filled:     0.8000
+hash matrix increased from         4194304 to         8388608 % filled:     0.8000
+hash matrix increased from         8388608 to        16777216 % filled:     0.8000
+hash matrix increased from         4194304 to         8388608 % filled:     0.8000
+hash matrix increased from         8388608 to        16777216 % filled:     0.8000
+hash matrix increased from        16777216 to        33554432 % filled:     0.8000
+hash matrix increased from        33554432 to        67108864 % filled:     0.8000
+hash matrix increased from        67108864 to       134217728 % filled:     0.8000
+hash matrix increased from            8192 to           16384 % filled:     0.8000
+hash matrix increased from           16384 to           32768 % filled:     0.8000
+hash matrix increased from           32768 to           65536 % filled:     0.8000
+hash matrix increased from           65536 to          131072 % filled:     0.8000
+ finished peds in    713.5207      s,                68409004  nonzeroes
+ rank=      331783
+
+ YAMS: Yet Another MME Solver  Version 1.1.5           
+--------------------------------------------------------------
+ Original MME:
+   No. of Equations                =        398696
+   No. of Nonzeros                 =      68475917
+   IA byte type                    =             4
+   Ordering Method                 =           AMD
+   Factor Type                     =           LDL
+   Algorithm for Factorization     =         SN LL
+   Algorithm for Inversion         =         INVMF
+ Supernodes (SNs):
+   No. of SNs.                     =        236753
+   No. of Cols. in the Last SN.    =         12499
+   Frequent No. of Cols.           =             1
+   Its Count                       =        109815
+   Its Ratio (%)                   =      46.38378
+   Threshold of Split              =    2147483647
+ Factor (L):
+   User-defined Constraint         =             0
+   Rank                            =        331783
+   No. of Constraints              =         66913
+   Panel Size                      =           256
+   Tolerances for Kachman mod.     =     1.000E-10     1.000E-10
+   Detection of Panel Size (1:YES) =             0
+ Memory:
+   No. of Effective Entries in L   =      94867898
+   No. of Allocated Entries in L   =      97532204
+   Storage for L              (MB) =         744.1
+   Storage for Integer Arrays (MB) =          15.6
+   Temp. Mem. for FACT.       (MB) =          36.4
+   Temp. Mem. for INV.        (MB) =         459.8
+ CPU & System Time in the last call:
+   Ordering                  (sec) =          34.3          20.7
+   Symbolic Fact.            (sec) =           8.2           8.2
+   Numerical Fact.           (sec) =         247.4          36.7
+   Sparse Inversion          (sec) =         741.1          24.6
+   Solution                  (sec) =          14.4           0.3
+
+ -2logL =    295364.564705898       : AIC =    295388.564705898     
+  In round            1  convergence=  3.204941496709681E-014
+ round            1
+ new r
+  0.53284      0.81746    
+  0.81746       1997.4    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1152.4     -0.70908      -308.05    
+   0.0000     -0.70908      0.37269      -2.4207    
+   0.0000      -308.05      -2.4207       450.76    
+ new G
+  0.41413E-01 -0.73249    
+ -0.73249       449.04    
+ * START iteration: 08-25-2020  15h 03m 35s 588
+ -2logL =    295364.564704563       : AIC =    295388.564704563     
+  In round            2  convergence=  9.644497078163841E-015
+ round            2
+ new r
+  0.53284      0.81746    
+  0.81746       1997.4    
+ new G
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1152.4     -0.70908      -308.05    
+   0.0000     -0.70908      0.37269      -2.4207    
+   0.0000      -308.05      -2.4207       450.76    
+ new G
+  0.41413E-01 -0.73249    
+ -0.73249       449.04    
+ * END iteration: 08-25-2020  15h 03m 35s 588
+ solutions and s.e. stored in file: "solutions"
+   1.000000      0.0000000E+00 -0.5995192      0.0000000E+00
+   4.000000      0.0000000E+00  0.9308550      0.0000000E+00
+   2.000000      0.0000000E+00  0.1779513      0.0000000E+00
+   3.000000      0.0000000E+00  0.7380033      0.0000000E+00
+   1.000000      0.0000000E+00 -0.6392065      0.0000000E+00
+   2.000000      0.0000000E+00 -6.9261976E-02  0.0000000E+00
+   3.000000      0.0000000E+00  0.5008864      0.0000000E+00
+   1.000000      0.0000000E+00 -0.5510867      0.0000000E+00
+   2.000000      0.0000000E+00 -1.1192044E-02  0.0000000E+00
+ wrote yhat and residual in file "yhat_residual"
+
+Final Estimates
+ Genetic variance(s) for effect  2       
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1152.4     -0.70908      -308.05    
+   0.0000     -0.70908      0.37269      -2.4207    
+   0.0000      -308.05      -2.4207       450.76    
+   correlations
+   0.0000       0.0000       0.0000       0.0000    
+   0.0000       1.0000     -0.34215E-01 -0.42741    
+   0.0000     -0.34215E-01   1.0000     -0.18676    
+   0.0000     -0.42741     -0.18676       1.0000    
+   eigenvectors
+   1.0000       0.0000       0.0000       0.0000    
+   0.0000     -0.25119E-02  0.35253     -0.93580    
+   0.0000     -0.99997     -0.75225E-02 -0.14971E-03
+   0.0000     -0.70923E-02  0.93577      0.35254    
+  eigenvalues
+   0.0000      0.35374       334.73       1268.5    
+ Genetic variance(s) for effect  4       
+  0.41413E-01 -0.73249    
+ -0.73249       449.04    
+   correlations
+   1.0000     -0.16986    
+ -0.16986       1.0000    
+   eigenvectors
+  -1.0000     -0.16314E-02
+ -0.16314E-02   1.0000    
+  eigenvalues
+  0.40218E-01   449.04    
+ Residual variance(s)
+  0.53284      0.81746    
+  0.81746       1997.4    
+   correlations
+   1.0000      0.25057E-01
+  0.25057E-01   1.0000    
+   eigenvectors
+  -1.0000      0.40937E-03
+  0.40937E-03   1.0000    
+  eigenvalues
+  0.53250       1997.4    
+* Warning * may need to increase # samples     0    12
+  
+ Sampling variances of covariances function of random effects (n=1000000)
+  
+hmwm  - Function: g_3_3_1_2/(g_3_3_1_1*g_3_3_2_2)^0.5
+  Mean:  -0.18676    
+  Sample Mean:  -0.18676    
+  Sample SD:           NaN
+  
+wmwd  - Function: g_2_3_2_2/(g_2_2_2_2*g_3_3_2_2)^0.5
+  Mean:  -0.42741    
+  Sample Mean:  -0.42741    
+  Sample SD:           NaN
+  
+wdhm  - Function: g_2_3_2_1/(g_2_2_2_2*g_3_3_1_1)^0.5
+  Mean:  -0.34215E-01
+  Sample Mean:  -0.34215E-01
+  Sample SD:   0.11824E-06
+ elapsed time   1.402344    
+ * FINISHED (AIREMLF90): 08-25-2020  15h 05m 53s 310
