@@ -192,7 +192,7 @@ snp_sol %>%
 ```
 
 
-## Manhattan plot of $$-log_{10}(p-value)$$
+## Manhattan plot of $-log_{10}(p-value)$
 
 ```{r, fig.width = 11, fig.height = 6.16}
 manall <- hair_manhattan(df = snp_sol, y_var = neglog10p, 

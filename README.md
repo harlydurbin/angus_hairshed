@@ -1,6 +1,6 @@
 # Code and analyses associated with "Development of a genetic evaluation for hair shedding in American Angus cattle to improve thermotolerance" (Durbin et al., 2020)
 
-Current version of the manuscript can be found on [bioRxiv](https://www.biorxiv.org/content/10.1101/2020.05.21.109553v1?rss=1)
+[Link to manuscript @ GSE](https://gsejournal.biomedcentral.com/articles/10.1186/s12711-020-00584-0)
 
 ## Data cleaning
 
