@@ -1,0 +1,180 @@
+---
+title: "Hair shedding guidelines and example data"
+output:
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, eval = FALSE, message = FALSE)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(glue)
+library(rlang)
+library(lubridate)
+library(magrittr)
+library(purrr)
+library(readxl)
+library(tidylog)
+
+source(here::here("source_functions/cg_tallies.R"))
+source(here::here("source_functions/three_gen.R"))
+source(here::here("source_functions/melt_aireml.R"))
+source(here::here("source_functions/calculate_heritability.R"))
+```
+
+```{r}
+
+angus_join <- readr::read_rds(here::here("data/derived_data/angus_join.rds"))
+
+```
+
+```{r}
+source(here::here("source_functions/hair_ped.R"))
+```
+
+# How to hair shedding score
+
+Hair shedding score is recorded on a 1-5 visual appraisal scale where 1 is completely shed off and 5 is a full winter coat. In the legacy AGI projects cattle were scored by multiple technicians and I took the average of those scores, resulting in some non-integer scores. However, we've been asking producers in the Mizzou project to use integer scores. Based on the repeatability of hair shedding, I'd recommend that cattle be scored for at least three years.
+
+# Contemporary group definition
+
+* **Breeder ID**
+* **Year**
+* **Sex**
+    + Do we want to put sex into contemporary group or just accept females for now?
+* **Score group:** Must be scored within a week of each other to form a contemporary group
+    + In this data, I assigned score groups based on a sliding window for producers that scored cattle on many days
+    + Cattle should be scored in April, May, or June
+* **Age group**
+    + Yearlings
+    + Two year olds
+    + Mature cows (3-6)
+    + Old cows (7+)
+* **Calving season**
+* **Toxic fescue:** Did they graze endophyte-infected (toxic) fescue in spring of the current year?
+    + Don't have this information for most of the legacy data: I still need to get with NCSU folks
+* Remove contemporary groups with fewer than 5 animals
+
+
+```{r}
+example_data <-
+  angus_join %>% 
+  left_join(
+    read_excel(here::here("data/derived_data/score_windows2.xlsx")) %>% 
+      select(farm_id, date_score_recorded, score_group) %>% 
+      mutate(date_score_recorded = lubridate::ymd(date_score_recorded))
+  ) %>% 
+  mutate(
+    score_group = tidyr::replace_na(score_group, 1),
+    age_group =
+      case_when(
+        # Yearling heifers
+        age == 1 ~ "yearling",
+        # First calf heifers
+        age == 2 ~ "fch",
+        # 3-6 mature cows
+        between(age, 3, 6) ~ "mature",
+        # Old cows
+        age >= 7 ~ "old"
+        ),
+    cg_description = glue("{farm_id}-{year}-{sex}-{score_group}-{age_group}-{calving_season}-{toxic_fescue}"),
+    cg_num = as.integer(factor(cg_description))
+    ) 
+  
+```
+
+```{r}
+example_data %>% 
+  arrange(cg_num) %>% 
+  select(
+    source,
+    farm_id,
+    registration_number = full_reg,
+    animal_id, 
+    sex, 
+    hair_score,
+    date_score_recorded,
+    score_group,
+    age,
+    age_group,
+    calving_season,
+    toxic_fescue,
+    cg_description,
+    cg_num
+    ) %>% 
+  writexl::write_xlsx(here::here("tidied_hair_data.xlsx"))
+```
+
+# Files
+
+* *tidied_hair_data.xlsx* contains the combined AGI legacy data and Mizzou project data after cleaning including contemporary group assignments. CGs with fewer than 5 animals are still included in this file. Columns:
+    + source: Mizzou or "legacy"
+    + farm_id
+    + registration_number
+    + animal_id
+    + sex: M or F
+    + hair_score: 1-5
+    + date_score_recorded: between 4/1 and 6/30
+    + score_group: used for contemporary group assignment, determined by sliding window based on date_score_recorded within farm_id
+    + age: age in years
+    + age_group
+    + toxic_fescue: did the animal graze endophyte infected fescue in spring of the scored year: YES, NO or missing
+    + cg_description
+    + cg_num
+* *hairshed_handout.pdf* is an informational flyer from a field day last year and has some more info on how to score
+* *hjd_bog19.pdf* is a recent poster presentation about hair shedding
+* *agiboard_2019.pdf* is the 2019 AGI board meeting presentation about hair shedding
+* Example/reference analysis
+    + *data.hair_example.txt* is the data file used in the example analysis (CGs with fewer than 5 animals removed)
+    + *ped.hair_example.txt* is the pedigree file used in the example analys
+    + *hair_example.par* is the parameter file used in the example analysis
+    + *hair_exmple.solutions* contains the solutions obtained from the example run
+    + *airemlf90.hair_example.log* contains variance component solutions from the example run
+
+
+```{r}
+# Write out data file
+example_data %>% 
+  group_by(cg_num) %>% 
+  filter(n() >= 5) %>% 
+  ungroup() %>% 
+  select(full_reg, cg_num, hair_score) %>% 
+  write_delim(here::here("data/f90/example/data.hair_example.txt"),
+              delim = " ",
+              col_names = FALSE)
+  
+```
+
+```{r}
+# Write out pedigree
+example_data %>% 
+  group_by(cg_num) %>% 
+  filter(n() >= 5) %>% 
+  ungroup() %>% 
+  select(full_reg) %>% 
+  distinct() %>% 
+  left_join(hair_ped %>% 
+              select(full_reg, sire_reg, dam_reg)) %>% 
+  three_gen(full_ped = hair_ped) %>% 
+  write_delim(here::here("data/f90/example/ped.hair_example.txt"),
+              delim = " ",
+              col_names = FALSE)
+```
+
+```{r}
+# Check heritability 
+melt_aireml(
+  path = "data/f90/example/airemlf90.hair_example.log",
+  effect2 = c("hair_dir"),
+  effect3 = c("hair_pe"),
+  resids = c("hair_res")
+            ) %>% 
+  univ_heritability(
+    abbrv = "hair",
+    desc = "Hair shedding",
+    pe = TRUE
+  )
+```
+

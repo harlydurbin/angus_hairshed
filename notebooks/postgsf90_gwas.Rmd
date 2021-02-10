@@ -1,0 +1,136 @@
+---
+title: "Hair shedding score (single trait) SNP effects"
+author: "Harly Durbin"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    df_print: paged
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(rlang)
+library(glue)
+library(ggplot2)
+library(lubridate)
+library(forcats)
+library(magrittr)
+library(readxl)
+library(purrr)
+library(tidylog)
+
+source(here::here("source_functions/hair_manhattan.R"))
+
+```
+
+# Notes & questions
+
+* SNP file and map file formatting in `geno_format.Rmd`. 
+* SNP effects calculated from ssBLUP using `blupf90` and `postGSf90`
+* postGS output files explanation (p. 41)
+    + (`windows_variance`)[http://nce.ads.uga.edu/wiki/doku.php?id=readme.pregsf90#misc_options]
+        - 1: trait
+        - 2: effect
+        - 3: Start SNP number or SNP name for the window
+        - 4: End SNP number or SNP name for the window
+        - 5: window size (number of SNP)
+        - 6: Start (ChrNumber)'_'(Position) for the window
+        - 7: End (ChrNumber)'_'(Position) for the window
+        - 8: identification of window: (ChrNumber)'_'(startPositionMBP)
+        - 9: variance explained by n adjacents SNP
+
+
+
+# Setup
+
+```{r, warning = FALSE, message=FALSE}
+snp_sol <-
+  read_table2(
+    here::here("data/derived_data/gwas_hair/iter4/chrsnp_pval"),
+    col_names = c("trait", "effect", "pval", "snp", "chr", "pos")
+  )  %>%
+  # SNP effects & weights
+  left_join(read_table2(here::here(
+    "data/derived_data/gwas_hair/iter4/snp_sol"
+  ))) %>%
+  rename(neglog10p = pval) %>%
+  select(-trait) %>%
+  # Change -log(10) values back
+  mutate(pval = 10 ^ (-(neglog10p))) %>%
+  # Keep only autosomes
+  filter(29 >= chr) %>%
+  # Remove SNPs with no pvalue
+  filter(!is.nan(pval)) %>%
+  # allele frequency data
+  left_join(read_table2(
+    here::here(
+      "data/derived_data/gwas_hair/iter4/freqdata.count.after.clean"
+    ),
+    col_names = c("snp", "af", "snp_comment")
+  )) %>%
+  mutate_at(vars("snp_effect", "weight"), ~ as.numeric(.))
+  
+```
+
+```{r}
+snp_sol %>% 
+  filter(converted_effect > 100) %>% 
+  select(chr, pos, snp_effect, variance_explained, var_a_hat, neglog10p, af)
+```
+
+
+# SNP effects
+
+```{r, fig.width = 10, fig.height = 5.6}
+snp_sol %>%
+  filter(snp_effect < 700) %>% 
+  hair_manhattan(
+    y_var = abs(snp_effect),
+    y_lab = "Absolute value of the estimated SNP effect",
+    plot_title = NULL
+  )
+```
+
+
+# P-values
+
+```{r, fig.width = 10, fig.height = 5.6}
+snp_sol %>%
+  hair_manhattan(
+    y_var = neglog10p,
+    y_lab = "-log10(p-value)",
+    plot_title = NULL,
+    sigline = TRUE
+  )
+```
+
+## qq-plot
+
+```{r}
+ggqq <- function(pvector){
+  pvector = pvector[!is.na(pvector) & !is.nan(pvector) & !is.null(pvector) & is.finite(pvector) & pvector<1 & pvector>0]
+  pdf = data.frame(observed = -log10(sort(pvector, decreasing = FALSE)), expected = -log10(ppoints(length(pvector))))
+  qqplotted = ggplot(pdf, aes(expected, observed)) +
+    geom_point() +
+    geom_abline(intercept = 0,
+                slope = 1,
+                colour = "red")+
+    labs(x = expression(paste("Expected ", -log10, "(", italic('p'), ")")),
+         y = expression(paste("Expected ", -log10, "(", italic('p'), ")")))
+  return(qqplotted)
+}
+```
+
+
+```{r}
+ggqq(pvector = snp_sol$pval)
+```
+
+
+# Commentary
