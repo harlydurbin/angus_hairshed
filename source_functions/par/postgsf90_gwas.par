@@ -3,7 +3,7 @@ data.txt
 TRAITS
 3
 FIELDS_PASSED TO OUTPUT
-1
+
 WEIGHT(S)
 
 RESIDUAL_VARIANCE
@@ -33,10 +33,14 @@ pedigree
 (CO)VARIANCES_PE
 0.1
 OPTION minfreq 0.0001
-OPTION chrinfo ../../chrinfo.imputed_hair.txt
+OPTION chrinfo ../chrinfo.imputed_hair.txt
 OPTION residual
 OPTION sol se
 OPTION conv_crit 1e-12
 OPTION use_yams
+# http://nce.ads.uga.edu/wiki/lib/exe/fetch.php?media=postgs_sa.pdf
+OPTION saveGInverse
+OPTION snp_p_value
 OPTION sex_chr 30
 OPTION excludeCHR
+OPTION weightedG iter0/weights.txt

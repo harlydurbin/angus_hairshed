@@ -25,7 +25,7 @@ library(ggplot2)
 library(corrr)
 library(tidylog)
 
-
+source(here::here("source_functions/melt_aireml.R"))
 ```
 
 # Notes & questions
@@ -34,6 +34,23 @@ library(tidylog)
 
 # Setup
 
+```{r}
+lr_prediction_acc <- 
+  function(bias_df, sigma2_u, f_val) {
+    
+    bias_df <-
+      bias_df %>% 
+      filter_at(vars("solution_full", "solution_reduced"), all_vars(!is.na(.)))
+    
+    # Covariance between full and reduced EBVs for all animals
+    cov <- cov(bias_df$solution_full, bias_df$solution_reduced)
+    
+    # f_val is average inbreeding for validation animals (those with phenotype excluded)
+    # sigma2_u is estimated additive genetic variance
+    sqrt((cov)/((1-f_val)*sigma2_u))
+    
+  } 
+```
 
 ```{r}
 
@@ -416,6 +433,57 @@ bias %>%
   knitr::kable(escape = FALSE)
 ```
 
+# February 2021: Correct calculation of prediction accuracy with LR method
+
+$$\hat{acc}_{LR}=\sqrt{\frac{cov(\hat{u}_w, \hat{u}_p)}{(1-F)\hat{\sigma}^2_u}}$$
+
+```{r}
+
+pred_acc <-
+  bias %>% 
+  group_by(iter) %>% 
+  nest() %>% 
+  ungroup() %>% 
+  mutate(gen_var = purrr::map_dbl(.x = iter,
+                                   ~ melt_aireml(path = here::here(glue("data/derived_data/bias/iter{.x}/airemlf90.bias.iter{.x}.log")),
+                                                 effect2 = c("hs"),
+                                                 resids = c("hs_res")) %>% 
+                                     filter_at(vars(contains("val")), all_vars(. == "hs")) %>% 
+                                     pull(var_cov)),
+         f = purrr::map2_dbl(.x = data,
+                             .y = iter,
+                             ~ .x %>% 
+                               filter(group == "dropped") %>% 
+                               left_join(read_table2(here::here(glue("data/derived_data/bias/iter{.y}/renf90.inb")),
+                                                     col_names = FALSE) %>% 
+                                           select(full_reg = X1, f = X2)) %>% 
+                               summarise(f = mean(f)) %>%
+                               pull(f)),
+         pred_acc = purrr::pmap_dbl(list(data, gen_var, f),
+                                    .f = lr_prediction_acc)) %>% 
+  select(-data)
+```
+
+## Within iterations
+
+```{r}
+pred_acc %>% 
+  arrange(pred_acc) %>% 
+  select(Iteration = iter,
+         `Prediction accuracy` = pred_acc) %>% 
+  knitr::kable(escape = FALSE)
+```
+
+## Across all iterations
+
+```{r}
+pred_acc %>% 
+  summarise(`Min. prediction acc.` = min(pred_acc),
+            `Mean prediction acc.` = mean(pred_acc),
+            `Max. prediction acc.` = max(pred_acc),
+            `SD prediction acc.` = sd(pred_acc)) %>% 
+  knitr::kable(escape = FALSE)
+```
 
 
 # Commentary

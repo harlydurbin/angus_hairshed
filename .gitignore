@@ -6,3 +6,5 @@ talks_articles/*
 *.ftpconfig
 data/*
 *.pdf
+*.txt
+*.log

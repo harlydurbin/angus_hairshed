@@ -1,5 +1,5 @@
 
-#nohup snakemake -s source_functions/bias.snakefile --latency-wait 30 --jobs 5 --config --resources load=100 --keep-going &> log/snakemake_log/200218.bias.log &
+#nohup snakemake -s source_functions/bias.snakefile --latency-wait 30 --jobs 5 --config --resources load=100 --keep-going -R renumf90 --until renumf90 &> log/snakemake_log/210210.bias.log &
 
 #export LD_LIBRARY_PATH=/home/agiintern/.conda/envs/regionsenv/lib
 
@@ -23,25 +23,30 @@ rule start:
 rule general_start:
     input:
         start = "data/derived_data/start.rds",
-        genotyped_id = "data/derived_data/genotyped_id.txt",
-        par = "source_functions/par/bias.par"
+        genotyped_id = "data/derived_data/genotyped_id.txt"
     params:
         log = "log/rule_log/bias_start/bias_start_iter{iter}.log",
         iter = "{iter}"
     output:
         ped = "data/derived_data/bias/iter{iter}/ped.txt",
         data = "data/derived_data/bias/iter{iter}/data.txt",
-        pull_list = "data/derived_data/bias/iter{iter}/pull_list.txt",
-        par = "data/derived_data/bias/iter{iter}/bias.par"
+        pull_list = "data/derived_data/bias/iter{iter}/pull_list.txt"
     shell:
         """
         Rscript --vanilla source_functions/bias_start.R {params.iter} &> {params.log}
-        cp {input.par} {output.par}
         """
+
+rule copy_par:
+    input:
+        par = "source_functions/par/bias.par"
+    output:
+        par = "data/derived_data/bias/iter{iter}/bias.par"
+    shell:
+        "cp {input.par} {output.par}"
 
 rule pull_genotypes:
     resources:
-        load = 1
+        load = 20
     input:
         pull_list = "data/derived_data/bias/iter{iter}/pull_list.txt",
         master_geno = config['master_geno']
@@ -55,7 +60,7 @@ rule pull_genotypes:
 
 rule renumf90:
     resources:
-        load = 1
+        load = 20
     input:
         input_par = "data/derived_data/bias/iter{iter}/bias.par",
         reduced_geno = "data/derived_data/bias/iter{iter}/genotypes.txt",
