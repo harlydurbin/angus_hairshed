@@ -8,3 +8,5 @@ data/*
 *.pdf
 *.txt
 *.log
+Icon?
+*.DS_Store
